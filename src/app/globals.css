@@ -31,3 +31,10 @@ a { color: inherit; text-decoration: none; }
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: #0F172A; }
 ::-webkit-scrollbar-thumb { background: #2D3F5C; border-radius: 3px; }
+.desktop-nav { display: flex; }
+.mobile-nav { display: none; }
+
+@media (max-width: 768px) {
+  .desktop-nav { display: none !important; }
+  .mobile-nav { display: flex !important; }
+}
