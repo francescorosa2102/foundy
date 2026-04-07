@@ -10,6 +10,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="it">
+      <head>
+        <script type="text/javascript" src="https://embeds.iubenda.com/widgets/156a47e8-f130-4505-a9c5-35bfc27d5c0f.js" async></script>
+      </head>
       <body>
         <Navbar />
         <main>{children}</main>
