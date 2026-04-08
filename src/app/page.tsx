@@ -124,32 +124,74 @@ export default function Home() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#0D111D' }}>
+
+      {/* HERO */}
       <div style={{ textAlign: 'center', padding: '5rem 1rem 3rem', maxWidth: 700, margin: '0 auto' }}>
         <div style={{ marginBottom: 32 }}>
           <img src="/foundy.png" alt="Foundy" style={{ height: 320, width: 'auto' }} />
         </div>
         <p style={{ fontSize: 18, color: '#94A3B8', marginBottom: 36 }}>Condividi idee. Trova talenti. Costruisci insieme.</p>
-        {user
-          ? <button onClick={() => setShowNew(true)} style={{ ...btn, padding: '11px 28px', fontSize: 15 }}>+ Pubblica la tua idea</button>
-          : (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24 }}>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-                <div style={{ fontSize: 'clamp(2.5rem,8vw,5rem)', fontWeight: 800, color: '#F59E0B', letterSpacing: '-2px', lineHeight: 1 }}>
-                  {totalCount.toLocaleString('it-IT')}
-                </div>
-                <div style={{ fontSize: 16, color: '#94A3B8', maxWidth: 460, textAlign: 'center', lineHeight: 1.6 }}>
-                  idee e startup ti aspettano — sei a un passo dal trovare il co-founder giusto
-                </div>
+
+        {user ? (
+          <button onClick={() => setShowNew(true)} style={{ ...btn, padding: '11px 28px', fontSize: 15 }}>+ Pubblica la tua idea</button>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+              <div style={{ fontSize: 'clamp(2.5rem,8vw,5rem)', fontWeight: 800, color: '#F59E0B', letterSpacing: '-2px', lineHeight: 1 }}>
+                {totalCount.toLocaleString('it-IT')}
               </div>
-              <div style={{ display: 'flex', gap: 12 }}>
-                <a href="/signup" style={{ ...btn, display: 'inline-block', padding: '12px 28px', fontSize: 15 }}>Pubblica la tua idea →</a>
-                <a href="/login" style={{ display: 'inline-block', padding: '12px 28px', fontSize: 15, borderRadius: 9, border: '1px solid #2D3F5C', color: '#94A3B8' }}>Accedi</a>
+              <div style={{ fontSize: 16, color: '#94A3B8', maxWidth: 460, textAlign: 'center', lineHeight: 1.6 }}>
+                idee e startup ti aspettano — sei a un passo dal trovare il co-founder giusto
               </div>
             </div>
-          )
-        }
+
+            {/* Come funziona */}
+            <div style={{ width: '100%', maxWidth: 700, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 16 }}>
+              {[
+                { emoji: '💡', title: 'Pubblica la tua idea', desc: 'Carica il tuo progetto in pochi minuti e inizia a costruire il team.' },
+                { emoji: '🤝', title: 'Trova il co-founder', desc: 'Cerca persone con le competenze che ti mancano: dev, designer, marketer.' },
+                { emoji: '🚀', title: 'Costruisci insieme', desc: 'Workspace privato con chat, task e materiali solo per il tuo team.' },
+                { emoji: '🏆', title: 'Vai in vetrina', desc: 'Team completo? La tua startup appare agli investitori.' },
+              ].map((item, i) => (
+                <div key={i} style={{ background: '#1E293B', border: '1px solid #2D3F5C', borderRadius: 14, padding: '1.25rem', textAlign: 'center' }}>
+                  <div style={{ fontSize: 28, marginBottom: 10 }}>{item.emoji}</div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: '#F1F5F9', marginBottom: 6 }}>{item.title}</div>
+                  <div style={{ fontSize: 12, color: '#94A3B8', lineHeight: 1.6 }}>{item.desc}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Perché Foundy */}
+            <div style={{ width: '100%', maxWidth: 700, background: '#1E293B', border: '1px solid #2D3F5C', borderRadius: 16, padding: '1.75rem', textAlign: 'left' }}>
+              <div style={{ fontSize: 18, fontWeight: 700, color: '#F1F5F9', marginBottom: 16, textAlign: 'center' }}>
+                Perché scegliere Foundy? 🇮🇹
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {[
+                  '✅ Completamente gratuito — nessun abbonamento, nessuna sorpresa',
+                  '✅ Solo per italiani — community locale, connessioni reali',
+                  '✅ Workspace privato — chat e task solo per il tuo team',
+                  '✅ Vetrina investitori — quando il team è pronto, la tua startup brilla',
+                  '✅ Idee protette — ogni pubblicazione richiede accettazione dei termini',
+                  '✅ Semplice e veloce — profilo in 2 minuti, idea pubblicata subito',
+                ].map((point, i) => (
+                  <div key={i} style={{ fontSize: 14, color: '#94A3B8', lineHeight: 1.6, padding: '8px 12px', background: '#0F172A', borderRadius: 8 }}>
+                    {point}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* CTA */}
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' as const, justifyContent: 'center' }}>
+              <a href="/signup" style={{ ...btn, display: 'inline-block', padding: '12px 28px', fontSize: 15 }}>Pubblica la tua idea →</a>
+              <a href="/login" style={{ display: 'inline-block', padding: '12px 28px', fontSize: 15, borderRadius: 9, border: '1px solid #2D3F5C', color: '#94A3B8' }}>Accedi</a>
+            </div>
+          </div>
+        )}
       </div>
 
+      {/* FEED — solo per utenti loggati */}
       <div style={{ maxWidth: 780, margin: '0 auto', padding: '0 1rem 4rem', display: user ? 'block' : 'none' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24 }}>
           <h2 style={{ fontSize: 18, fontWeight: 600, color: '#F1F5F9' }}>Idee aperte</h2>
@@ -205,6 +247,7 @@ export default function Home() {
         ))}
       </div>
 
+      {/* MODAL JOIN */}
       {joinModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: '1rem' }}>
           <div style={{ background: '#1E293B', border: '1px solid #2D3F5C', borderRadius: 16, padding: '1.75rem', width: '100%', maxWidth: 480 }}>
@@ -220,6 +263,7 @@ export default function Home() {
         </div>
       )}
 
+      {/* MODAL NUOVO PROGETTO */}
       {showNew && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: '1rem' }}>
           <div style={{ background: '#1E293B', border: '1px solid #2D3F5C', borderRadius: 16, padding: '1.75rem', width: '100%', maxWidth: 520, maxHeight: '90vh', overflowY: 'auto' }}>
