@@ -231,7 +231,7 @@ export default function Home() {
                     {pr.profiles?.display_name?.[0] ?? '?'}
                   </div>
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 500, color: '#F1F5F9' }}>{pr.profiles?.display_name ?? 'Founder'}</div>
+                    <a href={`/profile/${pr.founder_id}`} style={{ fontSize: 13, fontWeight: 500, color: '#F1F5F9', textDecoration: 'none' }}>{pr.profiles?.display_name ?? 'Founder'}</a>
                     <div style={{ fontSize: 11, color: '#94A3B8' }}>Founder</div>
                   </div>
                 </div>
