@@ -139,7 +139,7 @@ export default function ProfilePage() {
             </div>
             <div>
               <label style={label}>Corso di studi / Ruolo professionale</label>
-<input value={profile.degree_course} onChange={e => setProfile({ ...profile, degree_course: e.target.value })} style={inp} placeholder="Es. Ingegneria Informatica / CEO / Marketing Manager..." />
+<input value={profile.degree_course} onChange={e => setProfile({ ...profile, degree_course: e.target.value })} style={inp} placeholder="Es. Ingegneria/CEO/Marketing Manager..." />
             </div>
           </div>
 
