@@ -26,6 +26,8 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [toast, setToast] = useState('')
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
+  const [editProject, setEditProject] = useState<any>(null)
+  const [editData, setEditData] = useState({ title: '', description: '', category: '', required_roles: '', image_url: '' })
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }) => {
@@ -102,6 +104,33 @@ export default function DashboardPage() {
     showToast('Progetto eliminato.')
     if (user) loadAll(user.id)
   }
+
+  async function saveEdit() {
+  if (!editProject) return
+  const roles = editData.required_roles.split(',').map(r => r.trim()).filter(Boolean)
+  const { error } = await supabase.from('projects').update({
+    title: editData.title,
+    description: editData.description,
+    category: editData.category,
+    required_roles: roles,
+    image_url: editData.image_url || null,
+  }).eq('id', editProject.id)
+  if (error) { showToast('Errore nel salvataggio'); return }
+  setEditProject(null)
+  showToast('Idea aggiornata! ✅')
+  if (user) loadAll(user.id)
+}
+
+async function uploadEditImage(file: File) {
+  if (!user) return
+  const ext = file.name.split('.').pop()
+  const path = `${user.id}/${Date.now()}.${ext}`
+  const { error } = await supabase.storage.from('project-images').upload(path, file)
+  if (error) { showToast('Errore upload immagine'); return }
+  const { data } = supabase.storage.from('project-images').getPublicUrl(path)
+  setEditData(prev => ({ ...prev, image_url: data.publicUrl }))
+  showToast('Immagine caricata! ✅')
+}
 
   const statusBadge = (s: string): React.CSSProperties => {
     const map: Record<string, React.CSSProperties> = {
@@ -279,6 +308,18 @@ export default function DashboardPage() {
                       <a href={`/projects/${pr.id}/workspace`} style={{ ...btn, display: 'inline-block', textDecoration: 'none', fontSize: 13 }}>
                         💬 Apri workspace →
                       </a>
+                      <button onClick={() => {
+  setEditProject(pr)
+  setEditData({
+    title: pr.title,
+    description: pr.description,
+    category: pr.category ?? '',
+    required_roles: (pr.required_roles ?? []).join(', '),
+    image_url: pr.image_url ?? '',
+  })
+}} style={{ ...btn, background: 'rgba(245,158,11,0.15)', color: '#F59E0B', border: '1px solid rgba(245,158,11,0.3)' }}>
+  ✏️ Modifica
+</button>
                       <button onClick={() => setConfirmDelete(pr.id)} style={btnDanger}>
                         🗑 Elimina progetto
                       </button>
@@ -290,6 +331,46 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+
+      {editProject && (
+  <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: '1rem' }}>
+    <div style={{ background: '#1E293B', border: '1px solid #2D3F5C', borderRadius: 16, padding: '1.75rem', width: '100%', maxWidth: 520, maxHeight: '90vh', overflowY: 'auto' }}>
+      <h3 style={{ fontSize: 18, fontWeight: 600, color: '#F1F5F9', marginBottom: 20 }}>✏️ Modifica idea</h3>
+      
+      <label style={{ display: 'block', fontSize: 13, color: '#94A3B8', marginBottom: 6 }}>Titolo</label>
+      <input value={editData.title} onChange={e => setEditData({ ...editData, title: e.target.value })}
+        style={{ width: '100%', padding: '10px 14px', background: '#0F172A', border: '1px solid #2D3F5C', borderRadius: 9, color: '#F1F5F9', fontSize: 14, fontFamily: 'inherit', outline: 'none', marginBottom: 14 }}
+        placeholder="Nome dell'idea" />
+
+      <label style={{ display: 'block', fontSize: 13, color: '#94A3B8', marginBottom: 6 }}>Descrizione</label>
+      <textarea value={editData.description} onChange={e => setEditData({ ...editData, description: e.target.value })}
+        style={{ width: '100%', padding: '10px 14px', background: '#0F172A', border: '1px solid #2D3F5C', borderRadius: 9, color: '#F1F5F9', fontSize: 14, fontFamily: 'inherit', outline: 'none', marginBottom: 14, minHeight: 90, resize: 'vertical' as const }}
+        placeholder="Di cosa si tratta?" />
+
+      <label style={{ display: 'block', fontSize: 13, color: '#94A3B8', marginBottom: 6 }}>Settore</label>
+      <input value={editData.category} onChange={e => setEditData({ ...editData, category: e.target.value })}
+        style={{ width: '100%', padding: '10px 14px', background: '#0F172A', border: '1px solid #2D3F5C', borderRadius: 9, color: '#F1F5F9', fontSize: 14, fontFamily: 'inherit', outline: 'none', marginBottom: 14 }}
+        placeholder="Es. Fintech, AI, SaaS..." />
+
+      <label style={{ display: 'block', fontSize: 13, color: '#94A3B8', marginBottom: 6 }}>Ruoli cercati (separati da virgola)</label>
+      <input value={editData.required_roles} onChange={e => setEditData({ ...editData, required_roles: e.target.value })}
+        style={{ width: '100%', padding: '10px 14px', background: '#0F172A', border: '1px solid #2D3F5C', borderRadius: 9, color: '#F1F5F9', fontSize: 14, fontFamily: 'inherit', outline: 'none', marginBottom: 14 }}
+        placeholder="Dev, Designer, Marketing..." />
+
+      <label style={{ display: 'block', fontSize: 13, color: '#94A3B8', marginBottom: 6 }}>Immagine (opzionale)</label>
+      <input type="file" accept="image/*" onChange={async e => {
+        const file = e.target.files?.[0]
+        if (file) await uploadEditImage(file)
+      }} style={{ width: '100%', padding: '10px 14px', background: '#0F172A', border: '1px solid #2D3F5C', borderRadius: 9, color: '#F1F5F9', fontSize: 14, cursor: 'pointer', marginBottom: 14 }} />
+      {editData.image_url && <img src={editData.image_url} alt="preview" style={{ width: '100%', height: 120, objectFit: 'cover', borderRadius: 8, marginBottom: 14 }} />}
+
+      <div style={{ display: 'flex', gap: 10 }}>
+        <button onClick={() => setEditProject(null)} style={{ flex: 1, padding: '10px', borderRadius: 9, border: '1px solid #2D3F5C', background: 'none', color: '#94A3B8', cursor: 'pointer', fontSize: 14 }}>Annulla</button>
+        <button onClick={saveEdit} style={{ flex: 1, padding: '10px', borderRadius: 9, background: 'linear-gradient(135deg,#7C3AED,#6D28D9)', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 500 }}>Salva modifiche</button>
+      </div>
+    </div>
+  </div>
+)}
 
       {confirmDelete && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: '1rem' }}>
