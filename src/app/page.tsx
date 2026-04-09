@@ -146,7 +146,7 @@ export default function Home() {
         </div>
         <p style={{ fontSize: 18, color: '#94A3B8', marginBottom: 16 }}>Condividi idee. Trova talenti. Costruisci insieme.</p>
 <p style={{ fontSize: 22, fontWeight: 700, color: '#F59E0B', marginBottom: 36, letterSpacing: '-0.5px', fontFamily: 'Georgia, serif', lineHeight: 1.4, maxWidth: 600, margin: '0 auto 36px' }}>
-  Il primo social network italiano che connette idee e progetti imprenditoriali con co-founder e soci qualificati.
+  Il primo social network italiano che connette idee e progetti imprenditoriali con co-founder, futuri soci giovani e professionali.
 </p>
 
         {user ? (
