@@ -41,7 +41,7 @@ export default function DashboardPage() {
             .order('created_at', { ascending: false })
         : { data: [] },
       supabase.from('join_requests')
-        .select('*, projects:project_id(title, category, id, profiles:founder_id(display_name))')
+        .select('*, projects:project_id(title, category, id, profiles:founder_id(id, display_name))')
         .eq('applicant_id', uid)
         .order('created_at', { ascending: false }),
       supabase.from('projects')
@@ -134,9 +134,11 @@ export default function DashboardPage() {
                 <div key={r.id} style={{ background: '#1E293B', border: '1px solid #2D3F5C', borderRadius: 14, padding: '1.25rem', marginBottom: 14 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'linear-gradient(135deg,#7C3AED,#F59E0B)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 600, color: '#fff', flexShrink: 0 }}>
-                        {r.profiles?.display_name?.[0] ?? '?'}
-                      </div>
+                      <a href={`/profile/${r.applicant_id}`} style={{ textDecoration: 'none' }}>
+                        <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'linear-gradient(135deg,#7C3AED,#F59E0B)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 600, color: '#fff', flexShrink: 0 }}>
+                          {r.profiles?.display_name?.[0] ?? '?'}
+                        </div>
+                      </a>
                       <div>
                         <a href={`/profile/${r.applicant_id}`} style={{ fontSize: 15, fontWeight: 600, color: '#F1F5F9', textDecoration: 'none' }}>{r.profiles?.display_name ?? 'Utente'}</a>
                         <div style={{ fontSize: 12, color: '#64748B' }}>{r.profiles?.university ?? ''} {r.profiles?.degree_course ? `· ${r.profiles.degree_course}` : ''}</div>
@@ -181,10 +183,12 @@ export default function DashboardPage() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                     <div>
                       <div style={{ fontSize: 15, fontWeight: 600, color: '#F1F5F9' }}>{r.projects?.title ?? '—'}</div>
-                      <div style={{ fontSize: 12, color: '#64748B' }}>Founder: {r.projects?.profiles?.display_name ?? '—'}</div>
+                      <a href={`/profile/${r.projects?.profiles?.id}`} style={{ fontSize: 12, color: '#64748B', textDecoration: 'none' }}>
+                        Founder: {r.projects?.profiles?.display_name ?? '—'}
+                      </a>
                     </div>
                     <span style={statusBadge(r.status)}>
-                     {r.status === 'pending' ? 'In attesa' : r.status === 'accepted' ? 'Accettato ✓' : r.status === 'rejected' ? 'Lasciato/Rifiutato' : 'Rifiutato'}
+                      {r.status === 'pending' ? 'In attesa' : r.status === 'accepted' ? 'Accettato ✓' : 'Lasciato/Rifiutato'}
                     </span>
                   </div>
                   {r.message && <p style={{ fontSize: 13, color: '#94A3B8', fontStyle: 'italic', marginBottom: 10 }}>"{r.message}"</p>}
@@ -239,9 +243,9 @@ export default function DashboardPage() {
                         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' as const }}>
                           {members.map((m: any) => (
                             <div key={m.profile_id} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                              <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 999, background: 'rgba(124,58,237,0.12)', border: '1px solid rgba(124,58,237,0.3)', color: '#8B5CF6' }}>
+                              <a href={`/profile/${m.profile_id}`} style={{ fontSize: 12, padding: '3px 10px', borderRadius: 999, background: 'rgba(124,58,237,0.12)', border: '1px solid rgba(124,58,237,0.3)', color: '#8B5CF6', textDecoration: 'none' }}>
                                 {m.profiles?.display_name ?? 'Membro'}
-                              </span>
+                              </a>
                               <button onClick={() => removeMember(pr.id, m.profile_id)} style={{ background: 'none', border: 'none', color: '#EF4444', cursor: 'pointer', fontSize: 12, padding: '2px 4px' }} title="Rimuovi membro">✕</button>
                             </div>
                           ))}
@@ -273,7 +277,6 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* Modal conferma elimina */}
       {confirmDelete && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: '1rem' }}>
           <div style={{ background: '#1E293B', border: '1px solid #2D3F5C', borderRadius: 16, padding: '1.75rem', width: '100%', maxWidth: 400, textAlign: 'center' }}>

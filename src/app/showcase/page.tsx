@@ -91,9 +91,9 @@ useEffect(() => {
                   <div style={{ borderTop: '1px solid #2D3F5C', paddingTop: 12 }}>
                     <div style={{ fontSize: 11, color: '#64748B', marginBottom: 8 }}>Il team</div>
                     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' as const }}>
-                      <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 999, background: 'rgba(124,58,237,0.12)', border: '1px solid rgba(124,58,237,0.3)', color: '#8B5CF6' }}>
+                      <a href={`/profile/${pr.founder_id}`} style={{ fontSize: 12, padding: '3px 10px', borderRadius: 999, background: 'rgba(124,58,237,0.12)', border: '1px solid rgba(124,58,237,0.3)', color: '#8B5CF6', textDecoration: 'none' }}>
                         👑 {pr.profiles?.display_name ?? 'Founder'}
-                      </span>
+                      </a>
                       {members.map((m: any) => (
                         <span key={m.profile_id} style={{ fontSize: 12, padding: '3px 10px', borderRadius: 999, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)', color: '#10B981' }}>
                           {m.profiles?.display_name ?? 'Co-founder'}
