@@ -138,7 +138,7 @@ export default function DashboardPage() {
                         {r.profiles?.display_name?.[0] ?? '?'}
                       </div>
                       <div>
-                        <div style={{ fontSize: 15, fontWeight: 600, color: '#F1F5F9' }}>{r.profiles?.display_name ?? 'Utente'}</div>
+                        <a href={`/profile/${r.applicant_id}`} style={{ fontSize: 15, fontWeight: 600, color: '#F1F5F9', textDecoration: 'none' }}>{r.profiles?.display_name ?? 'Utente'}</a>
                         <div style={{ fontSize: 12, color: '#64748B' }}>{r.profiles?.university ?? ''} {r.profiles?.degree_course ? `· ${r.profiles.degree_course}` : ''}</div>
                       </div>
                     </div>

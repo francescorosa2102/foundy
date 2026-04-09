@@ -141,7 +141,7 @@ export default function SearchPage() {
               <h3 style={{ fontSize: 18, fontWeight: 600, color: '#F1F5F9', marginBottom: 6 }}>{pr.title}</h3>
               <p style={{ fontSize: 13, color: '#94A3B8', lineHeight: 1.5, marginBottom: 14 }}>{pr.description}</p>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 12, color: '#64748B' }}>👤 {pr.profiles?.display_name ?? 'Founder'}</span>
+                <a href={`/profile/${pr.founder_id}`} style={{ fontSize: 12, color: '#64748B', textDecoration: 'none' }}>👤 {pr.profiles?.display_name ?? 'Founder'}</a>
                 {user?.id !== pr.founder_id && (
                   sentIds.includes(pr.id)
                     ? <span style={{ fontSize: 13, color: '#10B981' }}>✓ Richiesta inviata</span>
