@@ -12,6 +12,7 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [pendingCount, setPendingCount] = useState(0)
   const [isMobile, setIsMobile] = useState(false)
+  const [avatarUrl, setAvatarUrl] = useState('')
   const pathname = usePathname()
 
   useEffect(() => {
@@ -26,13 +27,16 @@ export default function Navbar() {
       if (data.user) {
         setUser(data.user)
         const { data: profile } = await supabase
-          .from('profiles')
-          .select('display_name')
-          .eq('id', data.user.id)
-          .single()
+  .from('profiles')
+  .select('display_name, avatar_url')
+  .eq('id', data.user.id)
+  .single()
         if (profile?.display_name) {
-          setInitials(profile.display_name.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase())
-        }
+  setInitials(profile.display_name.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase())
+}
+if (profile?.avatar_url) {
+  setAvatarUrl(profile.avatar_url)
+}
         const myProjects = await supabase.from('projects').select('id').eq('founder_id', data.user.id)
         const ids = myProjects.data?.map(p => p.id) ?? []
         if (ids.length > 0) {
@@ -95,13 +99,18 @@ export default function Navbar() {
           {!isMobile && user && (
             <div style={{ position: 'relative' }}>
               <div onClick={() => setMenuOpen(!menuOpen)} style={{
-                width: 36, height: 36, borderRadius: '50%',
-                background: 'linear-gradient(135deg, #7C3AED, #F59E0B)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 13, fontWeight: 600, color: '#fff', cursor: 'pointer',
-              }}>
-                {initials || '?'}
-              </div>
+  width: 36, height: 36, borderRadius: '50%',
+  background: 'linear-gradient(135deg, #7C3AED, #F59E0B)',
+  display: 'flex', alignItems: 'center', justifyContent: 'center',
+  fontSize: 13, fontWeight: 600, color: '#fff', cursor: 'pointer',
+  overflow: 'hidden', flexShrink: 0,
+}}>
+  {avatarUrl
+    ? <img src={avatarUrl} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+    : initials || '?'
+  }
+</div>
+              
               {menuOpen && (
                 <div style={{
                   position: 'absolute', top: 44, right: 0,
