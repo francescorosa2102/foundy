@@ -211,14 +211,21 @@ export default function ProjectDetail() {
 
             <label style={{ display: 'block', fontSize: 13, color: '#94A3B8', marginBottom: 8 }}>Ruolo che vuoi ricoprire *</label>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' as const, marginBottom: 16 }}>
-              {(project.required_roles ?? []).map((role: string) => (
-                <button key={role} onClick={() => setSelectedRole(role)} style={{
-                  padding: '6px 14px', borderRadius: 999, fontSize: 13, cursor: 'pointer',
-                  background: selectedRole === role ? 'rgba(124,58,237,0.2)' : 'none',
-                  border: selectedRole === role ? '1px solid rgba(124,58,237,0.5)' : '1px solid #2D3F5C',
-                  color: selectedRole === role ? '#8B5CF6' : '#94A3B8',
-                }}>{selectedRole === role ? '✓ ' : ''}{role}</button>
-              ))}
+              {(project.required_roles ?? []).map((role: string, i: number) => {
+  const isTaken = i < filled
+  return (
+    <button key={role} onClick={() => !isTaken && setSelectedRole(role)} style={{
+      padding: '6px 14px', borderRadius: 999, fontSize: 13,
+      cursor: isTaken ? 'not-allowed' : 'pointer',
+      background: isTaken ? 'rgba(16,185,129,0.08)' : selectedRole === role ? 'rgba(124,58,237,0.2)' : 'none',
+      border: isTaken ? '1px solid rgba(16,185,129,0.3)' : selectedRole === role ? '1px solid rgba(124,58,237,0.5)' : '1px solid #2D3F5C',
+      color: isTaken ? '#10B981' : selectedRole === role ? '#8B5CF6' : '#94A3B8',
+      opacity: isTaken ? 0.6 : 1,
+    }}>
+      {isTaken ? '✓ occupato' : selectedRole === role ? '✓ ' : ''}{role}
+    </button>
+  )
+})}
             </div>
 
             <label style={{ display: 'block', fontSize: 13, color: '#94A3B8', marginBottom: 8 }}>Perché vuoi unirti? *</label>
