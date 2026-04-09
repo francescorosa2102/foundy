@@ -45,20 +45,32 @@ export default function SearchPage() {
   const [user, setUser] = useState<any>(null)
   const [sentIds, setSentIds] = useState<string[]>([])
   const [toast, setToast] = useState('')
+  const [savedIds, setSavedIds] = useState<string[]>([])
 
   useEffect(() => {
-    supabase.auth.getUser().then(async ({ data }) => {
-      setUser(data.user)
-      if (data.user) {
-        const { data: sent } = await supabase.from('join_requests').select('project_id').eq('applicant_id', data.user.id)
-        if (sent) setSentIds(sent.map(r => r.project_id))
-      }
-    })
-    search()
-  }, [])
+  supabase.auth.getUser().then(async ({ data }) => {
+    setUser(data.user)
+    if (data.user) {
+      const { data: sent } = await supabase.from('join_requests').select('project_id').eq('applicant_id', data.user.id)
+      if (sent) setSentIds(sent.map(r => r.project_id))
+      const { data: saved } = await supabase.from('saved_projects').select('project_id').eq('profile_id', data.user.id)
+      if (saved) setSavedIds(saved.map(r => r.project_id))
+    }
+  })
+  search()
+}, [])
 
   function showToast(msg: string) { setToast(msg); setTimeout(() => setToast(''), 3000) }
-
+async function toggleSave(projectId: string) {
+  if (!user) return
+  if (savedIds.includes(projectId)) {
+    await supabase.from('saved_projects').delete().eq('project_id', projectId).eq('profile_id', user.id)
+    setSavedIds(p => p.filter(id => id !== projectId))
+  } else {
+    await supabase.from('saved_projects').insert({ project_id: projectId, profile_id: user.id })
+    setSavedIds(p => [...p, projectId])
+  }
+}
   async function search() {
     setLoading(true)
     let q = supabase
@@ -132,10 +144,18 @@ export default function SearchPage() {
               <h3 style={{ fontSize: 18, fontWeight: 600, color: '#F1F5F9', marginBottom: 14 }}>{pr.title}</h3>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <a href={`/profile/${pr.founder_id}`} onClick={e => e.stopPropagation()} style={{ fontSize: 12, color: '#64748B', textDecoration: 'none' }}>👤 {pr.profiles?.display_name ?? 'Founder'}</a>
-                {sentIds.includes(pr.id)
-                  ? <span style={{ fontSize: 13, color: '#10B981' }}>✓ Richiesta inviata</span>
-                  : user?.id !== pr.founder_id && <span style={{ fontSize: 12, color: '#7C3AED' }}>Clicca per vedere →</span>
-                }
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+  <button onClick={e => { e.stopPropagation(); toggleSave(pr.id) }} style={{
+    background: 'none', border: 'none', cursor: 'pointer', fontSize: 20,
+    color: savedIds.includes(pr.id) ? '#F59E0B' : '#2D3F5C', padding: '4px'
+  }}>
+    {savedIds.includes(pr.id) ? '★' : '☆'}
+  </button>
+  {sentIds.includes(pr.id)
+    ? <span style={{ fontSize: 13, color: '#10B981' }}>✓ Richiesta inviata</span>
+    : user?.id !== pr.founder_id && <span style={{ fontSize: 12, color: '#7C3AED' }}>Clicca per vedere →</span>
+  }
+</div>
               </div>
             </div>
           </div>
