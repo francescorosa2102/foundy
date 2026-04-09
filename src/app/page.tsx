@@ -54,6 +54,7 @@ export default function Home() {
   const [joinModal, setJoinModal] = useState<Project | null>(null)
   const [joinMsg, setJoinMsg] = useState('')
   const [sentIds, setSentIds] = useState<string[]>([])
+  const [savedIds, setSavedIds] = useState<string[]>([])
   const [toast, setToast] = useState('')
   const [showNew, setShowNew] = useState(false)
   const [totalCount, setTotalCount] = useState(0)
@@ -65,6 +66,8 @@ export default function Home() {
       if (data.user) {
         const { data: sent } = await supabase.from('join_requests').select('project_id').eq('applicant_id', data.user.id)
         if (sent) setSentIds(sent.map(r => r.project_id))
+        const { data: saved } = await supabase.from('saved_projects').select('project_id').eq('profile_id', data.user.id)
+        if (saved) setSavedIds(saved.map(r => r.project_id))
       }
     })
     supabase.auth.onAuthStateChange((_e, s) => setUser(s?.user ?? null))
@@ -81,6 +84,17 @@ export default function Home() {
   }
 
   function showToast(msg: string) { setToast(msg); setTimeout(() => setToast(''), 3000) }
+
+  async function toggleSave(projectId: string) {
+  if (!user) return
+  if (savedIds.includes(projectId)) {
+    await supabase.from('saved_projects').delete().eq('project_id', projectId).eq('profile_id', user.id)
+    setSavedIds(p => p.filter(id => id !== projectId))
+  } else {
+    await supabase.from('saved_projects').insert({ project_id: projectId, profile_id: user.id })
+    setSavedIds(p => [...p, projectId])
+  }
+}
 
   async function sendJoin() {
     if (!user || !joinModal) return
@@ -237,12 +251,21 @@ export default function Home() {
                     <div style={{ fontSize: 11, color: '#94A3B8' }}>Founder</div>
                   </div>
                 </div>
-                {user?.id === pr.founder_id
-                  ? <span style={{ fontSize: 12, color: '#F59E0B', background: 'rgba(245,158,11,0.1)', padding: '5px 12px', borderRadius: 999, border: '1px solid rgba(245,158,11,0.25)' }}>Tua idea</span>
-                  : sentIds.includes(pr.id)
-                    ? <span style={{ color: '#10B981', fontSize: 13 }}>✓ Richiesta inviata</span>
-                    : <button onClick={() => setJoinModal(pr)} style={btn}>Partecipa →</button>
-                }
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+  <button onClick={e => { e.stopPropagation(); toggleSave(pr.id) }} style={{
+    background: 'none', border: 'none', cursor: 'pointer', fontSize: 20,
+    color: savedIds.includes(pr.id) ? '#F59E0B' : '#2D3F5C',
+    padding: '4px'
+  }}>
+    {savedIds.includes(pr.id) ? '★' : '☆'}
+  </button>
+  {user?.id === pr.founder_id
+    ? <span style={{ fontSize: 12, color: '#F59E0B', background: 'rgba(245,158,11,0.1)', padding: '5px 12px', borderRadius: 999, border: '1px solid rgba(245,158,11,0.25)' }}>Tua idea</span>
+    : sentIds.includes(pr.id)
+      ? <span style={{ color: '#10B981', fontSize: 13 }}>✓ Richiesta inviata</span>
+      : <button onClick={e => { e.stopPropagation(); setJoinModal(pr) }} style={btn}>Partecipa →</button>
+  }
+</div>
               </div>
             </div>
           </div>
