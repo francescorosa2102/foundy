@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 
-const SKILLS_OPTIONS = ['React', 'Node.js', 'Python', 'Design', 'Marketing', 'Finance', 'Legal', 'AI/ML', 'iOS', 'Android', 'DevOps', 'Sales', 'Product', 'Data']
 
 export default function ProfilePage() {
   const [user, setUser] = useState<any>(null)
@@ -166,16 +165,13 @@ export default function ProfilePage() {
         <div style={{ background: '#1E293B', border: '1px solid #2D3F5C', borderRadius: 16, padding: '1.75rem', marginBottom: 16 }}>
           <h2 style={{ fontSize: 16, fontWeight: 600, color: '#F1F5F9', marginBottom: 6 }}>Competenze</h2>
           <p style={{ fontSize: 13, color: '#94A3B8', marginBottom: 16 }}>Seleziona le tue competenze principali.</p>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' as const }}>
-            {SKILLS_OPTIONS.map(skill => (
-              <button key={skill} onClick={() => toggleSkill(skill)} style={{
-                padding: '6px 14px', borderRadius: 999, fontSize: 13, cursor: 'pointer',
-                background: profile.skills.includes(skill) ? 'rgba(124,58,237,0.2)' : 'none',
-                border: profile.skills.includes(skill) ? '1px solid rgba(124,58,237,0.5)' : '1px solid #2D3F5C',
-                color: profile.skills.includes(skill) ? '#8B5CF6' : '#94A3B8',
-              }}>{profile.skills.includes(skill) ? '✓ ' : ''}{skill}</button>
-            ))}
-          </div>
+          <input
+  value={profile.skills.join(', ')}
+  onChange={e => setProfile({ ...profile, skills: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
+  style={{ width: '100%', padding: '11px 14px', background: '#0F172A', border: '1px solid #2D3F5C', borderRadius: 9, color: '#F1F5F9', fontSize: 14, fontFamily: 'inherit', outline: 'none' }}
+  placeholder="Es. Cuoco, Barman, Commercialista, Dev, Designer..."
+/>
+<div style={{ fontSize: 12, color: '#64748B', marginTop: 6 }}>Separa le competenze con una virgola</div>
         </div>
 
         <button onClick={save} disabled={saving} style={{
