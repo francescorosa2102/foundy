@@ -43,8 +43,6 @@ export default function SearchPage() {
   const [loading, setLoading] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [sentIds, setSentIds] = useState<string[]>([])
-  const [joinModal, setJoinModal] = useState<any>(null)
-  const [joinMsg, setJoinMsg] = useState('')
   const [toast, setToast] = useState('')
 
   useEffect(() => {
@@ -71,19 +69,6 @@ export default function SearchPage() {
     const { data } = await q.order('created_at', { ascending: false })
     setProjects(data ?? [])
     setLoading(false)
-  }
-
-  async function sendJoin() {
-    if (!user || !joinModal) return
-    if (!joinMsg.trim()) { showToast('Scrivi un messaggio di motivazione! 📝'); return }
-    const { error } = await supabase.from('join_requests').insert({
-      project_id: joinModal.id, applicant_id: user.id, message: joinMsg, status: 'pending'
-    })
-    if (error?.code === '23505') { showToast('Richiesta già inviata!'); setJoinModal(null); return }
-    if (error) { showToast('Errore'); return }
-    setSentIds(p => [...p, joinModal.id])
-    setJoinModal(null); setJoinMsg('')
-    showToast('Richiesta inviata! 🚀')
   }
 
   const inp: React.CSSProperties = { padding: '11px 16px', background: '#1E293B', border: '1px solid #2D3F5C', borderRadius: 10, color: '#F1F5F9', fontSize: 14, fontFamily: 'inherit', outline: 'none' }
@@ -127,8 +112,8 @@ export default function SearchPage() {
           <div key={pr.id} onClick={() => window.location.href = `/projects/${pr.id}`} style={{ background: '#1E293B', border: '1px solid #2D3F5C', borderRadius: 16, overflow: 'hidden', marginBottom: 20, cursor: 'pointer' }}>
             {pr.image_url
               ? <img src={pr.image_url} alt={pr.title} style={{ width: '100%', height: 160, objectFit: 'cover' }} />
-              : <div style={{ height: 160, background: getCategoryGradient(pr.category), display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                  <img src="/foundy.png" alt="Foundy" style={{ height: 48, width: 'auto', opacity: 0.7 }} />
+              : <div style={{ height: 160, background: getCategoryGradient(pr.category), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <img src="/foundy.png" alt="Foundy" style={{ height: 80, width: 'auto', opacity: 0.7 }} />
                 </div>
             }
             <div style={{ padding: '1.1rem' }}>
@@ -138,15 +123,13 @@ export default function SearchPage() {
                   <span key={r} style={{ fontSize: 11, padding: '3px 10px', borderRadius: 999, background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.3)', color: '#F59E0B' }}>{r}</span>
                 ))}
               </div>
-              <h3 style={{ fontSize: 18, fontWeight: 600, color: '#F1F5F9', marginBottom: 6 }}>{pr.title}</h3>
-              <p style={{ fontSize: 13, color: '#94A3B8', lineHeight: 1.5, marginBottom: 14 }}>{pr.description}</p>
+              <h3 style={{ fontSize: 18, fontWeight: 600, color: '#F1F5F9', marginBottom: 14 }}>{pr.title}</h3>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <a href={`/profile/${pr.founder_id}`} style={{ fontSize: 12, color: '#64748B', textDecoration: 'none' }}>👤 {pr.profiles?.display_name ?? 'Founder'}</a>
-                {user?.id !== pr.founder_id && (
-                  sentIds.includes(pr.id)
-                    ? <span style={{ fontSize: 13, color: '#10B981' }}>✓ Richiesta inviata</span>
-                    : <button onClick={() => setJoinModal(pr)} style={btn}>Partecipa →</button>
-                )}
+                <a href={`/profile/${pr.founder_id}`} onClick={e => e.stopPropagation()} style={{ fontSize: 12, color: '#64748B', textDecoration: 'none' }}>👤 {pr.profiles?.display_name ?? 'Founder'}</a>
+                {sentIds.includes(pr.id)
+                  ? <span style={{ fontSize: 13, color: '#10B981' }}>✓ Richiesta inviata</span>
+                  : user?.id !== pr.founder_id && <span style={{ fontSize: 12, color: '#7C3AED' }}>Clicca per vedere →</span>
+                }
               </div>
             </div>
           </div>
@@ -159,21 +142,6 @@ export default function SearchPage() {
           </div>
         )}
       </div>
-
-      {joinModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: '1rem' }}>
-          <div style={{ background: '#1E293B', border: '1px solid #2D3F5C', borderRadius: 16, padding: '1.75rem', width: '100%', maxWidth: 460 }}>
-            <h3 style={{ fontSize: 17, fontWeight: 600, color: '#F1F5F9', marginBottom: 16 }}>Candidati a "{joinModal.title}"</h3>
-            <textarea value={joinMsg} onChange={e => setJoinMsg(e.target.value)}
-              style={{ width: '100%', padding: '10px 14px', background: '#0F172A', border: '1px solid #2D3F5C', borderRadius: 9, color: '#F1F5F9', fontSize: 14, minHeight: 100, resize: 'vertical' as const, fontFamily: 'inherit', outline: 'none', marginBottom: 14 }}
-              placeholder="Perché vuoi unirti?" />
-            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-              <button onClick={() => setJoinModal(null)} style={{ padding: '9px 18px', borderRadius: 9, border: '1px solid #2D3F5C', background: 'none', color: '#94A3B8', cursor: 'pointer', fontSize: 14 }}>Annulla</button>
-              <button onClick={sendJoin} style={btn}>Invia</button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {toast && <div style={{ position: 'fixed', bottom: 28, left: '50%', transform: 'translateX(-50%)', background: '#1E293B', border: '1px solid #2D3F5C', color: '#F1F5F9', padding: '12px 24px', borderRadius: 12, fontSize: 14, zIndex: 300 }}>{toast}</div>}
     </div>

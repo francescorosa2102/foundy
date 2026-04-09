@@ -224,7 +224,6 @@ export default function Home() {
                 ))}
               </div>
               <h3 style={{ fontSize: 20, fontWeight: 600, color: '#F1F5F9', marginBottom: 8 }}>{pr.title}</h3>
-              <p style={{ fontSize: 14, color: '#94A3B8', lineHeight: 1.6, marginBottom: 16 }}>{pr.description}</p>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg,#7C3AED,#F59E0B)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 600, color: '#fff', overflow: 'hidden', flexShrink: 0 }}>
