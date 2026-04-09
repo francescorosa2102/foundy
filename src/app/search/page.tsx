@@ -64,7 +64,7 @@ export default function SearchPage() {
     setLoading(true)
     let q = supabase
       .from('projects')
-      .select('*, profiles:founder_id(display_name)')
+      .select('*, profiles:founder_id(display_name, avatar_url)')
       .eq('status', 'active')
     if (query) q = q.or(`title.ilike.%${query}%,description.ilike.%${query}%`)
     if (sector) q = q.eq('category', sector)

@@ -31,8 +31,11 @@ export default function PublicProfile() {
       <div style={{ maxWidth: 640, margin: '0 auto' }}>
         <div style={{ background: '#1E293B', border: '1px solid #2D3F5C', borderRadius: 16, padding: '2rem', marginBottom: 24 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
-            <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'linear-gradient(135deg,#7C3AED,#F59E0B)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, fontWeight: 700, color: '#fff', flexShrink: 0 }}>
-              {profile.display_name?.[0] ?? '?'}
+            <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'linear-gradient(135deg,#7C3AED,#F59E0B)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, fontWeight: 700, color: '#fff', flexShrink: 0, overflow: 'hidden' }}>
+              {profile.avatar_url
+                ? <img src={profile.avatar_url} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : profile.display_name?.[0]?.toUpperCase() ?? '?'
+              }
             </div>
             <div>
               <div style={{ fontSize: 22, fontWeight: 700, color: '#F1F5F9' }}>{profile.display_name}</div>
@@ -40,7 +43,9 @@ export default function PublicProfile() {
               {profile.city && <div style={{ fontSize: 13, color: '#64748B' }}>📍 {profile.city}</div>}
             </div>
           </div>
+
           {profile.bio && <p style={{ fontSize: 14, color: '#94A3B8', lineHeight: 1.7, marginBottom: 16 }}>{profile.bio}</p>}
+
           {profile.skills?.length > 0 && (
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' as const, marginBottom: 16 }}>
               {profile.skills.map((s: string) => (
@@ -48,10 +53,12 @@ export default function PublicProfile() {
               ))}
             </div>
           )}
+
           {profile.contact_email && (
             <a href={`mailto:${profile.contact_email}`} style={{ fontSize: 13, color: '#F59E0B', textDecoration: 'none' }}>✉️ {profile.contact_email}</a>
           )}
         </div>
+
         {projects.length > 0 && (
           <div>
             <h2 style={{ fontSize: 16, fontWeight: 600, color: '#F1F5F9', marginBottom: 14 }}>Idee pubblicate</h2>

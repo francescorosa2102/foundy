@@ -11,7 +11,7 @@ type Project = {
   required_roles: string[]
   image_url: string | null
   founder_id: string
-  profiles: { display_name: string } | null
+  profiles: { display_name: string; avatar_url: string | null } | null
 }
 
 const SECTORS = ['Blockchain & Crypto', 'Crescita personale', 'Cybersecurity', 'Data & Analytics', 'Design & UX/UI', 'E-commerce & Marketplace', 'Educazione & Formazione', 'Energia & Smart cities', 'Finanza personale & Investimenti', 'Fintech', 'Fitness & Sport', 'Intelligenza Artificiale', 'Marketing & Vendite', 'Media & Intrattenimento', 'Mobilità & Trasporti', 'Produttività & Automazione', 'Risorse umane & Recruiting', 'Ristorazione & Food', 'SaaS & Software', 'Salute & Benessere', 'Social & Creator economy', 'Startup & PMI', 'Sostenibilità & Ambiente', 'Tecnologia', 'Turismo & Viaggi']
@@ -73,7 +73,7 @@ export default function Home() {
 
   async function loadProjects() {
     setLoading(true)
-    const { data } = await supabase.from('projects').select('*, profiles:founder_id(display_name)').eq('status', 'active').order('created_at', { ascending: false })
+    const { data } = await supabase.from('projects').select('*, profiles:founder_id(display_name, avatar_url)').eq('status', 'active').order('created_at', { ascending: false })
     setProjects(data ?? [])
     const { count } = await supabase.from('projects').select('*', { count: 'exact', head: true })
     setTotalCount(count ?? 0)
@@ -227,9 +227,12 @@ export default function Home() {
               <p style={{ fontSize: 14, color: '#94A3B8', lineHeight: 1.6, marginBottom: 16 }}>{pr.description}</p>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg,#7C3AED,#F59E0B)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 600, color: '#fff' }}>
-                    {pr.profiles?.display_name?.[0] ?? '?'}
-                  </div>
+                  <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg,#7C3AED,#F59E0B)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 600, color: '#fff', overflow: 'hidden', flexShrink: 0 }}>
+  {pr.profiles?.avatar_url
+    ? <img src={pr.profiles.avatar_url} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+    : pr.profiles?.display_name?.[0] ?? '?'
+  }
+</div>
                   <div>
                     <a href={`/profile/${pr.founder_id}`} style={{ fontSize: 13, fontWeight: 500, color: '#F1F5F9', textDecoration: 'none' }}>{pr.profiles?.display_name ?? 'Founder'}</a>
                     <div style={{ fontSize: 11, color: '#94A3B8' }}>Founder</div>

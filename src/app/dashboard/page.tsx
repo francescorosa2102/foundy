@@ -5,6 +5,17 @@ import { supabase } from '../lib/supabaseClient'
 
 type Tab = 'ricevute' | 'inviate' | 'mie-idee'
 
+function Avatar({ url, name, size = 40 }: { url?: string | null, name?: string, size?: number }) {
+  return (
+    <div style={{ width: size, height: size, borderRadius: '50%', background: 'linear-gradient(135deg,#7C3AED,#F59E0B)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size / 3, fontWeight: 600, color: '#fff', flexShrink: 0, overflow: 'hidden' }}>
+      {url
+        ? <img src={url} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        : name?.[0]?.toUpperCase() ?? '?'
+      }
+    </div>
+  )
+}
+
 export default function DashboardPage() {
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
@@ -35,17 +46,17 @@ export default function DashboardPage() {
     const [recvRes, sentRes, myRes] = await Promise.all([
       myProjectIds.length > 0
         ? supabase.from('join_requests')
-            .select('*, profiles:applicant_id(id, display_name, skills, university, bio, city, degree_course), projects:project_id(title, founder_id)')
+            .select('*, profiles:applicant_id(id, display_name, avatar_url, skills, university, bio, city, degree_course), projects:project_id(title, founder_id)')
             .in('project_id', myProjectIds)
             .eq('status', 'pending')
             .order('created_at', { ascending: false })
         : { data: [] },
       supabase.from('join_requests')
-        .select('*, projects:project_id(title, category, id, profiles:founder_id(id, display_name))')
+        .select('*, projects:project_id(title, category, id, profiles:founder_id(id, display_name, avatar_url))')
         .eq('applicant_id', uid)
         .order('created_at', { ascending: false }),
       supabase.from('projects')
-        .select('*, project_members(profile_id, profiles:profile_id(display_name))')
+        .select('*, project_members(profile_id, profiles:profile_id(display_name, avatar_url))')
         .eq('founder_id', uid)
         .order('created_at', { ascending: false }),
     ])
@@ -125,7 +136,6 @@ export default function DashboardPage() {
 
         {loading && <div style={{ textAlign: 'center', padding: '3rem', color: '#94A3B8' }}>Caricamento...</div>}
 
-        {/* Richieste ricevute */}
         {!loading && tab === 'ricevute' && (
           <div>
             {received.length === 0
@@ -135,9 +145,7 @@ export default function DashboardPage() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                       <a href={`/profile/${r.applicant_id}`} style={{ textDecoration: 'none' }}>
-                        <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'linear-gradient(135deg,#7C3AED,#F59E0B)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 600, color: '#fff', flexShrink: 0 }}>
-                          {r.profiles?.display_name?.[0] ?? '?'}
-                        </div>
+                        <Avatar url={r.profiles?.avatar_url} name={r.profiles?.display_name} size={40} />
                       </a>
                       <div>
                         <a href={`/profile/${r.applicant_id}`} style={{ fontSize: 15, fontWeight: 600, color: '#F1F5F9', textDecoration: 'none' }}>{r.profiles?.display_name ?? 'Utente'}</a>
@@ -173,7 +181,6 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Richieste inviate */}
         {!loading && tab === 'inviate' && (
           <div>
             {sent.length === 0
@@ -181,11 +188,16 @@ export default function DashboardPage() {
               : sent.map(r => (
                 <div key={r.id} style={{ background: '#1E293B', border: '1px solid #2D3F5C', borderRadius: 14, padding: '1.25rem', marginBottom: 14 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                    <div>
-                      <div style={{ fontSize: 15, fontWeight: 600, color: '#F1F5F9' }}>{r.projects?.title ?? '—'}</div>
-                      <a href={`/profile/${r.projects?.profiles?.id}`} style={{ fontSize: 12, color: '#64748B', textDecoration: 'none' }}>
-                        Founder: {r.projects?.profiles?.display_name ?? '—'}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <a href={`/profile/${r.projects?.profiles?.id}`} style={{ textDecoration: 'none' }}>
+                        <Avatar url={r.projects?.profiles?.avatar_url} name={r.projects?.profiles?.display_name} size={36} />
                       </a>
+                      <div>
+                        <div style={{ fontSize: 15, fontWeight: 600, color: '#F1F5F9' }}>{r.projects?.title ?? '—'}</div>
+                        <a href={`/profile/${r.projects?.profiles?.id}`} style={{ fontSize: 12, color: '#64748B', textDecoration: 'none' }}>
+                          Founder: {r.projects?.profiles?.display_name ?? '—'}
+                        </a>
+                      </div>
                     </div>
                     <span style={statusBadge(r.status)}>
                       {r.status === 'pending' ? 'In attesa' : r.status === 'accepted' ? 'Accettato ✓' : 'Lasciato/Rifiutato'}
@@ -208,7 +220,6 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Le mie idee */}
         {!loading && tab === 'mie-idee' && (
           <div>
             {myProjects.length === 0
@@ -242,9 +253,12 @@ export default function DashboardPage() {
                         <div style={{ fontSize: 12, color: '#64748B', marginBottom: 6 }}>Team attuale:</div>
                         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' as const }}>
                           {members.map((m: any) => (
-                            <div key={m.profile_id} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                              <a href={`/profile/${m.profile_id}`} style={{ fontSize: 12, padding: '3px 10px', borderRadius: 999, background: 'rgba(124,58,237,0.12)', border: '1px solid rgba(124,58,237,0.3)', color: '#8B5CF6', textDecoration: 'none' }}>
-                                {m.profiles?.display_name ?? 'Membro'}
+                            <div key={m.profile_id} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                              <a href={`/profile/${m.profile_id}`} style={{ display: 'flex', alignItems: 'center', gap: 6, textDecoration: 'none' }}>
+                                <Avatar url={m.profiles?.avatar_url} name={m.profiles?.display_name} size={24} />
+                                <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 999, background: 'rgba(124,58,237,0.12)', border: '1px solid rgba(124,58,237,0.3)', color: '#8B5CF6' }}>
+                                  {m.profiles?.display_name ?? 'Membro'}
+                                </span>
                               </a>
                               <button onClick={() => removeMember(pr.id, m.profile_id)} style={{ background: 'none', border: 'none', color: '#EF4444', cursor: 'pointer', fontSize: 12, padding: '2px 4px' }} title="Rimuovi membro">✕</button>
                             </div>
