@@ -40,6 +40,7 @@ export default function SearchPage() {
   const [projects, setProjects] = useState<any[]>([])
   const [query, setQuery] = useState('')
   const [sector, setSector] = useState('')
+  const [city, setCity] = useState('')
   const [loading, setLoading] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [sentIds, setSentIds] = useState<string[]>([])
@@ -66,6 +67,7 @@ export default function SearchPage() {
       .eq('status', 'active')
     if (query) q = q.or(`title.ilike.%${query}%,description.ilike.%${query}%`)
     if (sector) q = q.eq('category', sector)
+    if (city) q = q.ilike('city', `%${city}%`)
     const { data } = await q.order('created_at', { ascending: false })
     setProjects(data ?? [])
     setLoading(false)
@@ -101,6 +103,10 @@ export default function SearchPage() {
           <select value={sector} onChange={e => setSector(e.target.value)} style={{ ...inp, minWidth: 140 }}>
             {SECTORS.map(s => <option key={s} value={s}>{s || 'Tutti i settori'}</option>)}
           </select>
+          <input value={city} onChange={e => setCity(e.target.value)}
+  onKeyDown={e => e.key === 'Enter' && search()}
+  style={{ ...inp, minWidth: 140 }} placeholder="Città..." />
+<button onClick={search} style={btn}>Cerca</button>
           <button onClick={search} style={btn}>Cerca</button>
         </div>
 

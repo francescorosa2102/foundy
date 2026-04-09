@@ -58,7 +58,7 @@ export default function Home() {
   const [toast, setToast] = useState('')
   const [showNew, setShowNew] = useState(false)
   const [totalCount, setTotalCount] = useState(0)
-  const [np, setNp] = useState({ title: '', description: '', category: 'Tecnologia', required_roles: '', image_url: '', accepted: false })
+  const [np, setNp] = useState({ title: '', description: '', category: 'Tecnologia', required_roles: '', image_url: '', city: '', accepted: false })
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }) => {
@@ -124,12 +124,12 @@ export default function Home() {
     const roles = np.required_roles.split(',').map(r => r.trim()).filter(Boolean)
     const { error } = await supabase.from('projects').insert({
       founder_id: user.id, title: np.title, description: np.description,
-      category: np.category, required_roles: roles, status: 'active', image_url: np.image_url || null,
+      category: np.category, required_roles: roles, status: 'active', image_url: np.image_url || null, city: np.city || null,
     })
     if (error) { showToast('Errore: ' + error.message); return }
     showToast('Progetto creato! 🎉')
     setShowNew(false)
-    setNp({ title: '', description: '', category: 'Tecnologia', required_roles: '', image_url: '', accepted: false })
+    setNp({ title: '', description: '', category: 'Tecnologia', required_roles: '', image_url: '', city: '', accepted: false })
     loadProjects()
   }
 
@@ -303,6 +303,8 @@ export default function Home() {
             </select>
             <label style={{ display: 'block', fontSize: 13, color: '#94A3B8', marginBottom: 6 }}>Ruoli cercati (separati da virgola)</label>
             <input value={np.required_roles} onChange={e => setNp({ ...np, required_roles: e.target.value })} style={{ ...inp, marginBottom: 14 }} placeholder="Dev, Designer, Marketing..." />
+            <label style={{ display: 'block', fontSize: 13, color: '#94A3B8', marginBottom: 6 }}>Città</label>
+            <input value={np.city} onChange={e => setNp({ ...np, city: e.target.value })} style={{ ...inp, marginBottom: 14 }} placeholder="Es. Milano, Roma, Torino..." />
             <label style={{ display: 'block', fontSize: 13, color: '#94A3B8', marginBottom: 6 }}>Immagine progetto (opzionale)</label>
             <input type="file" accept="image/*" onChange={async (e) => {
               const file = e.target.files?.[0]
