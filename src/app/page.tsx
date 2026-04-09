@@ -144,7 +144,10 @@ export default function Home() {
         <div style={{ marginBottom: 32 }}>
           <img src="/foundy.png" alt="Foundy" style={{ height: 320, width: 'auto' }} />
         </div>
-        <p style={{ fontSize: 18, color: '#94A3B8', marginBottom: 36 }}>Condividi idee. Trova talenti. Costruisci insieme.</p>
+        <p style={{ fontSize: 18, color: '#94A3B8', marginBottom: 16 }}>Condividi idee. Trova talenti. Costruisci insieme.</p>
+<p style={{ fontSize: 22, fontWeight: 700, color: '#F59E0B', marginBottom: 36, letterSpacing: '-0.5px', fontFamily: 'Georgia, serif', lineHeight: 1.4, maxWidth: 600, margin: '0 auto 36px' }}>
+  Il primo social network italiano che connette idee e progetti imprenditoriali con co-founder e soci qualificati.
+</p>
 
         {user ? (
           <button onClick={() => setShowNew(true)} style={{ ...btn, padding: '11px 28px', fontSize: 15 }}>+ Pubblica la tua idea</button>
