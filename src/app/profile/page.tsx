@@ -134,12 +134,12 @@ export default function ProfilePage() {
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
             <div>
-              <label style={label}>Università</label>
-              <input value={profile.university} onChange={e => setProfile({ ...profile, university: e.target.value })} style={inp} placeholder="Politecnico di Milano" />
+              <label style={label}>Università / Esperienza lavorativa</label>
+<input value={profile.university} onChange={e => setProfile({ ...profile, university: e.target.value })} style={inp} placeholder="Es. Politecnico di Milano / Sviluppatore @ Google / Imprenditore..." />
             </div>
             <div>
-              <label style={label}>Corso di studi</label>
-              <input value={profile.degree_course} onChange={e => setProfile({ ...profile, degree_course: e.target.value })} style={inp} placeholder="Ingegneria Informatica" />
+              <label style={label}>Corso di studi / Ruolo professionale</label>
+<input value={profile.degree_course} onChange={e => setProfile({ ...profile, degree_course: e.target.value })} style={inp} placeholder="Es. Ingegneria Informatica / CEO / Marketing Manager..." />
             </div>
           </div>
 
