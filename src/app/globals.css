@@ -42,3 +42,8 @@ html, body {
   overflow-x: hidden;
   max-width: 100vw;
 }
+
+button:hover {
+  box-shadow: 0 0 0 2px #F59E0B;
+  transition: box-shadow 0.2s;
+}

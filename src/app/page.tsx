@@ -175,7 +175,7 @@ export default function Home() {
                   '✅ Idee protette — ogni pubblicazione richiede accettazione dei termini',
                   '✅ Semplice e veloce — profilo in 2 minuti, idea pubblicata subito',
                 ].map((point, i) => (
-                  <div key={i} style={{ fontSize: 14, color: '#94A3B8', lineHeight: 1.6, padding: '8px 12px', background: '#0F172A', borderRadius: 8 }}>
+                  <div key={i} onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 0 0 2px #F59E0B')} onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')} style={{ fontSize: 14, color: '#94A3B8', lineHeight: 1.6, padding: '8px 12px', background: '#0F172A', borderRadius: 8, cursor: 'default' }}>
                     {point}
                   </div>
                 ))}
