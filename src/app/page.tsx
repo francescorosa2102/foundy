@@ -153,7 +153,7 @@ export default function Home() {
                 { emoji: '🚀', title: 'Costruisci insieme', desc: 'Workspace privato con chat, task e materiali solo per il tuo team.' },
                 { emoji: '🏆', title: 'Vai in vetrina', desc: 'Team completo? La tua startup appare agli investitori.' },
               ].map((item, i) => (
-                <div key={i} onMouseEnter={e => (e.currentTarget.style.border = '1px solid #7C3AED')} onMouseLeave={e => (e.currentTarget.style.border = '1px solid #2D3F5C')} style={{ background: '#1E293B', border: '1px solid #2D3F5C', borderRadius: 14, padding: '1.25rem', textAlign: 'center', transition: 'border 0.2s' }}>
+                <div key={i} onMouseEnter={e => (e.currentTarget.style.border = '1px solid #F59E0B')} onMouseLeave={e => (e.currentTarget.style.border = '1px solid #2D3F5C')} style={{ background: '#1E293B', border: '1px solid #2D3F5C', borderRadius: 14, padding: '1.25rem', textAlign: 'center', transition: 'border 0.2s' }}>
                   <div style={{ fontSize: 28, marginBottom: 10 }}>{item.emoji}</div>
                   <div style={{ fontSize: 14, fontWeight: 600, color: '#F1F5F9', marginBottom: 6 }}>{item.title}</div>
                   <div style={{ fontSize: 12, color: '#94A3B8', lineHeight: 1.6 }}>{item.desc}</div>
