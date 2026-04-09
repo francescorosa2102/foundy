@@ -124,7 +124,7 @@ export default function SearchPage() {
         {loading && <div style={{ textAlign: 'center', padding: '3rem', color: '#94A3B8' }}>Caricamento...</div>}
 
         {!loading && projects.map(pr => (
-          <div key={pr.id} style={{ background: '#1E293B', border: '1px solid #2D3F5C', borderRadius: 14, overflow: 'hidden', marginBottom: 16 }}>
+          <div key={pr.id} onClick={() => window.location.href = `/projects/${pr.id}`} style={{ background: '#1E293B', border: '1px solid #2D3F5C', borderRadius: 16, overflow: 'hidden', marginBottom: 20, cursor: 'pointer' }}>
             {pr.image_url
               ? <img src={pr.image_url} alt={pr.title} style={{ width: '100%', height: 160, objectFit: 'cover' }} />
               : <div style={{ height: 160, background: getCategoryGradient(pr.category), display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
