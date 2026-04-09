@@ -10,6 +10,8 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [toast, setToast] = useState('')
+  const [avatarUrl, setAvatarUrl] = useState('')
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const [profile, setProfile] = useState({
     display_name: '',
     first_name: '',
@@ -18,8 +20,8 @@ export default function ProfilePage() {
     degree_course: '',
     bio: '',
     city: '',
+    contact_email: '',
     skills: [] as string[],
-    interests: [] as string[],
   })
 
   useEffect(() => {
@@ -27,17 +29,20 @@ export default function ProfilePage() {
       if (!data.user) { window.location.href = '/login'; return }
       setUser(data.user)
       const { data: p } = await supabase.from('profiles').select('*').eq('id', data.user.id).single()
-      if (p) setProfile({
-        display_name: p.display_name ?? '',
-        first_name: p.first_name ?? '',
-        last_name: p.last_name ?? '',
-        university: p.university ?? '',
-        degree_course: p.degree_course ?? '',
-        bio: p.bio ?? '',
-        city: p.city ?? '',
-        skills: p.skills ?? [],
-        interests: p.interests ?? [],
-      })
+      if (p) {
+        setProfile({
+          display_name: p.display_name ?? '',
+          first_name: p.first_name ?? '',
+          last_name: p.last_name ?? '',
+          university: p.university ?? '',
+          degree_course: p.degree_course ?? '',
+          bio: p.bio ?? '',
+          city: p.city ?? '',
+          contact_email: p.contact_email ?? '',
+          skills: p.skills ?? [],
+        })
+        setAvatarUrl(p.avatar_url ?? '')
+      }
       setLoading(false)
     })
   }, [])
@@ -53,10 +58,24 @@ export default function ProfilePage() {
     }))
   }
 
+  async function uploadAvatar(file: File) {
+    if (!user) return
+    setUploadingAvatar(true)
+    const ext = file.name.split('.').pop()
+    const path = `avatars/${user.id}.${ext}`
+    const { error } = await supabase.storage.from('project-images').upload(path, file, { upsert: true })
+    if (error) { showToast('Errore upload foto'); setUploadingAvatar(false); return }
+    const { data } = supabase.storage.from('project-images').getPublicUrl(path)
+    setAvatarUrl(data.publicUrl)
+    await supabase.from('profiles').update({ avatar_url: data.publicUrl }).eq('id', user.id)
+    setUploadingAvatar(false)
+    showToast('Foto profilo aggiornata! ✅')
+  }
+
   async function save() {
     if (!user) return
     setSaving(true)
-    const { error } = await supabase.from('profiles').update(profile).eq('id', user.id)
+    const { error } = await supabase.from('profiles').update({ ...profile, avatar_url: avatarUrl }).eq('id', user.id)
     setSaving(false)
     if (error) { showToast('Errore nel salvataggio'); return }
     showToast('Profilo salvato! ✅')
@@ -73,6 +92,28 @@ export default function ProfilePage() {
         <h1 style={{ fontSize: 26, fontWeight: 700, color: '#F1F5F9', marginBottom: 4 }}>Il tuo profilo</h1>
         <p style={{ fontSize: 15, color: '#94A3B8', marginBottom: 28 }}>Le informazioni che gli altri founder vedranno.</p>
 
+        {/* Foto profilo */}
+        <div style={{ background: '#1E293B', border: '1px solid #2D3F5C', borderRadius: 16, padding: '1.75rem', marginBottom: 16 }}>
+          <h2 style={{ fontSize: 16, fontWeight: 600, color: '#F1F5F9', marginBottom: 20 }}>Foto profilo</h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+            <div style={{ width: 80, height: 80, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, background: 'linear-gradient(135deg,#7C3AED,#F59E0B)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, fontWeight: 700, color: '#fff' }}>
+              {avatarUrl
+                ? <img src={avatarUrl} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : profile.display_name?.[0]?.toUpperCase() ?? '?'
+              }
+            </div>
+            <div>
+              <label style={{ ...label, marginBottom: 8 }}>Carica una foto (opzionale)</label>
+              <input type="file" accept="image/*" onChange={async e => {
+                const file = e.target.files?.[0]
+                if (file) await uploadAvatar(file)
+              }} style={{ fontSize: 13, color: '#94A3B8', cursor: 'pointer' }} />
+              {uploadingAvatar && <div style={{ fontSize: 12, color: '#F59E0B', marginTop: 6 }}>Caricamento...</div>}
+            </div>
+          </div>
+        </div>
+
+        {/* Informazioni base */}
         <div style={{ background: '#1E293B', border: '1px solid #2D3F5C', borderRadius: 16, padding: '1.75rem', marginBottom: 16 }}>
           <h2 style={{ fontSize: 16, fontWeight: 600, color: '#F1F5F9', marginBottom: 20 }}>Informazioni base</h2>
 
@@ -108,6 +149,11 @@ export default function ProfilePage() {
             <input value={profile.city} onChange={e => setProfile({ ...profile, city: e.target.value })} style={inp} placeholder="Milano" />
           </div>
 
+          <div style={{ marginBottom: 14 }}>
+            <label style={label}>Email di contatto pubblica (opzionale)</label>
+            <input value={profile.contact_email} onChange={e => setProfile({ ...profile, contact_email: e.target.value })} style={inp} placeholder="mario@email.com" />
+          </div>
+
           <div>
             <label style={label}>Bio</label>
             <textarea value={profile.bio} onChange={e => setProfile({ ...profile, bio: e.target.value })}
@@ -116,6 +162,7 @@ export default function ProfilePage() {
           </div>
         </div>
 
+        {/* Competenze */}
         <div style={{ background: '#1E293B', border: '1px solid #2D3F5C', borderRadius: 16, padding: '1.75rem', marginBottom: 16 }}>
           <h2 style={{ fontSize: 16, fontWeight: 600, color: '#F1F5F9', marginBottom: 6 }}>Competenze</h2>
           <p style={{ fontSize: 13, color: '#94A3B8', marginBottom: 16 }}>Seleziona le tue competenze principali.</p>
