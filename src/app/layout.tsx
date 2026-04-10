@@ -16,7 +16,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Navbar />
         <main>{children}</main>
         <footer className="site-footer">
-          <span>© 2025 Foundy — Dove le idee diventano startup</span>
+          <div>
+  <span>© 2025 Foundy — Dove le idee diventano startup</span>
+  <div style={{ fontSize: 11, color: '#475569', marginTop: 4 }}>Beta v1.0</div>
+</div>
           <div>
             <a href="https://www.iubenda.com/privacy-policy/67848851" target="_blank">Privacy Policy</a>
             <a href="https://www.iubenda.com/privacy-policy/67848851/cookie-policy" target="_blank">Cookie Policy</a>
