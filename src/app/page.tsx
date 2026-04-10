@@ -178,6 +178,20 @@ export default function Home() {
               ))}
             </div>
 
+            {/* Banner Beta */}
+<div style={{ width: '100%', maxWidth: 700, background: 'linear-gradient(135deg, rgba(124,58,237,0.1), rgba(245,158,11,0.1))', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 16, padding: '1.5rem', textAlign: 'center', margin: '0 auto' }}>
+  <div style={{ fontSize: 13, color: '#F59E0B', fontWeight: 600, marginBottom: 8, letterSpacing: 1 }}>🚀 VERSIONE BETA</div>
+  <h3 style={{ fontSize: 18, fontWeight: 700, color: '#F1F5F9', marginBottom: 10 }}>
+    Stiamo costruendo qualcosa di grande
+  </h3>
+  <p style={{ fontSize: 14, color: '#94A3B8', lineHeight: 1.7, maxWidth: 500, margin: '0 auto' }}>
+    Quella che stai usando è la prima versione di Foundy. Stiamo lavorando a una versione avanzata con nuove funzionalità, migliori performance e un'esperienza ancora più fluida. Entra ora, fai parte dei primi e aiutaci a migliorare.
+  </p>
+  <div style={{ marginTop: 16, fontSize: 13, color: '#7C3AED', fontWeight: 500 }}>
+    Seguici per restare aggiornato sulle novità →
+  </div>
+</div>
+
             {/* Perché Foundy */}
             <div style={{ width: '100%', maxWidth: 700, background: '#1E293B', border: '1px solid #2D3F5C', borderRadius: 16, padding: '1.75rem', textAlign: 'left' }}>
               <div style={{ fontSize: 18, fontWeight: 700, color: '#F1F5F9', marginBottom: 16, textAlign: 'center' }}>
