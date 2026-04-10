@@ -180,6 +180,18 @@ export default function ProfilePage() {
         }}>
           {saving ? 'Salvataggio...' : 'Salva profilo'}
         </button>
+        <div style={{ marginTop: 40, borderTop: '1px solid #2D3F5C', paddingTop: 24 }}>
+  <h3 style={{ fontSize: 15, fontWeight: 600, color: '#EF4444', marginBottom: 8 }}>Zona pericolosa</h3>
+  <p style={{ fontSize: 13, color: '#64748B', marginBottom: 16, lineHeight: 1.6 }}>
+    Puoi richiedere la cancellazione del tuo account e di tutti i tuoi dati. La richiesta verrà elaborata entro 30 giorni come previsto dal GDPR.
+  </p>
+  <a 
+    href="mailto:tradyx212@gmail.com?subject=Richiesta cancellazione account&body=Ciao, vorrei richiedere la cancellazione del mio account e di tutti i miei dati personali come previsto dal GDPR. Il mio indirizzo email registrato è: [inserisci la tua email]"
+    style={{ display: 'inline-block', padding: '10px 20px', borderRadius: 9, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#EF4444', fontSize: 13, textDecoration: 'none' }}
+  >
+    🗑 Richiedi cancellazione account
+  </a>
+</div>
       </div>
 
       {toast && <div style={{ position: 'fixed', bottom: 28, left: '50%', transform: 'translateX(-50%)', background: '#1E293B', border: '1px solid #2D3F5C', color: '#F1F5F9', padding: '12px 24px', borderRadius: 12, fontSize: 14, zIndex: 300 }}>{toast}</div>}
