@@ -21,6 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   <div style={{ fontSize: 11, color: '#475569', marginTop: 4 }}>Beta v1.0</div>
 </div>
           <div>
+            <a href="/termini" style={{ color: '#94A3B8', textDecoration: 'none', marginLeft: 16 }}>Termini e Condizioni</a>
             <a href="https://www.iubenda.com/privacy-policy/67848851" target="_blank">Privacy Policy</a>
             <a href="https://www.iubenda.com/privacy-policy/67848851/cookie-policy" target="_blank">Cookie Policy</a>
           </div>
