@@ -187,9 +187,11 @@ export default function Home() {
   <p style={{ fontSize: 14, color: '#94A3B8', lineHeight: 1.7, maxWidth: 500, margin: '0 auto' }}>
     Quella che stai usando è la prima versione di Foundy. Stiamo lavorando a una versione avanzata con nuove funzionalità, migliori performance e un'esperienza ancora più fluida. Entra ora, fai parte dei primi e aiutaci a migliorare.
   </p>
-  <div style={{ marginTop: 16, fontSize: 13, color: '#7C3AED', fontWeight: 500 }}>
-    Seguici per restare aggiornato sulle novità →
-  </div>
+  <div style={{ marginTop: 16, display: 'flex', gap: 12, justifyContent: 'center', alignItems: 'center' }}>
+  <span style={{ fontSize: 13, color: '#94A3B8' }}>Seguici per restare aggiornato:</span>
+  <a href="https://www.instagram.com/foundy.it" target="_blank" style={{ fontSize: 13, color: '#F59E0B', fontWeight: 600, textDecoration: 'none' }}>📸 Instagram</a>
+  <a href="https://www.tiktok.com/@foundy.it" target="_blank" style={{ fontSize: 13, color: '#F59E0B', fontWeight: 600, textDecoration: 'none' }}>🎵 TikTok</a>
+</div>
 </div>
 
             {/* Perché Foundy */}
