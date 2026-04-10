@@ -56,7 +56,7 @@ if (profile?.avatar_url) {
   }, [])
 
   const links = [
-    { href: '/', label: 'Feed', badge: 0 },
+    { href: '/', label: 'Home', badge: 0 },
     { href: '/search', label: 'Cerca', badge: 0 },
     { href: '/dashboard', label: 'Gestione', badge: pendingCount },
     { href: '/showcase', label: 'Vetrina', badge: 0 },
