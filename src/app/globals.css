@@ -20,7 +20,7 @@
 }
 
 html, body {
-  background: #0D111D;
+  background: linear-gradient(135deg, #0D0B1A, #0D111D, #1a0d2e);
   color: #F1F5F9;
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   min-height: 100vh;

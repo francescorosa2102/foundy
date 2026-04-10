@@ -119,7 +119,11 @@ export default function Home() {
   }
 
   async function createProject() {
-    if (!np.title || !np.description) { showToast('Titolo e descrizione obbligatori'); return }
+    if (!np.title) { showToast('Inserisci il titolo! ☝️'); return }
+if (!np.description) { showToast('Inserisci la descrizione! ☝️'); return }
+if (!np.category) { showToast('Seleziona il settore! ☝️'); return }
+if (!np.required_roles) { showToast('Inserisci almeno un ruolo cercato! ☝️'); return }
+if (!np.city) { showToast('Inserisci la città! ☝️'); return }
     if (!np.accepted) { showToast('Devi accettare i termini per pubblicare! ☝️'); return }
     const roles = np.required_roles.split(',').map(r => r.trim()).filter(Boolean)
     const { error } = await supabase.from('projects').insert({
@@ -146,8 +150,13 @@ export default function Home() {
         </div>
         <p style={{ fontSize: 18, color: '#94A3B8', marginBottom: 16 }}>Condividi idee. Trova talenti. Costruisci insieme.</p>
 <p style={{ fontSize: 22, fontWeight: 700, color: '#F59E0B', marginBottom: 36, letterSpacing: '-0.5px', fontFamily: 'Georgia, serif', lineHeight: 1.4, maxWidth: 600, margin: '0 auto 36px' }}>
-  Il primo social network italiano che connette idee e progetti imprenditoriali con co-founder, futuri soci giovani e professionali.
+  Il primo social network italiano che connette idee e progetti imprenditoriali con co-founder, futuri soci e giovani professionisti. Condividi la tua visione, trova le persone giuste e costruisci qualcosa di grande.
 </p>
+<div style={{ marginTop: 12, marginBottom: 36, display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(124,58,237,0.1)', border: '1px solid rgba(124,58,237,0.3)', borderRadius: 999, padding: '8px 18px' }}>
+  <span style={{ fontSize: 12, color: '#94A3B8' }}>
+    📲 Su iPhone: tocca <strong style={{ color: '#F1F5F9' }}>Condividi</strong> → <strong style={{ color: '#F1F5F9' }}>"Aggiungi a Home"</strong> per usarla come app!
+  </span>
+</div>  
 
         {user ? (
           <button onClick={() => setShowNew(true)} style={{ ...btn, padding: '11px 28px', fontSize: 15 }}>+ Pubblica la tua idea</button>
