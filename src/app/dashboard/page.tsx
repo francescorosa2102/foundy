@@ -278,6 +278,11 @@ export default function DashboardPage() {
                         <span style={statusBadge(isComplete ? 'accepted' : 'pending')}>
                           {isComplete ? '🎉 Team completo' : `${filled}/${totalRoles} co-founder`}
                         </span>
+                        {isComplete && !profile?.contact_email && (
+  <div style={{ fontSize: 12, color: '#F59E0B', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 8, padding: '6px 10px', marginTop: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+    ⚠️ <span>Aggiungi una <a href="/profile" style={{ color: '#F59E0B', fontWeight: 600 }}>email di contatto</a> nel profilo per essere trovato dagli investitori!</span>
+  </div>
+)}
                         <div style={{ fontSize: 11, color: '#64748B', marginTop: 4 }}>{filled} su {totalRoles} ruoli coperti</div>
                       </div>
                     </div>
