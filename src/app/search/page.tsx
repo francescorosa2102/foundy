@@ -51,6 +51,7 @@ export default function SearchPage() {
   const [user, setUser] = useState<any>(null)
   const [sentIds, setSentIds] = useState<string[]>([])
   const [savedIds, setSavedIds] = useState<string[]>([])
+  const [savedProfileIds, setSavedProfileIds] = useState<string[]>([])
   const [toast, setToast] = useState('')
 
   useEffect(() => {
@@ -61,6 +62,8 @@ export default function SearchPage() {
         if (sent) setSentIds(sent.map(r => r.project_id))
         const { data: saved } = await supabase.from('saved_projects').select('project_id').eq('profile_id', data.user.id)
         if (saved) setSavedIds(saved.map(r => r.project_id))
+        const { data: savedP } = await supabase.from('saved_profiles').select('saved_profile_id').eq('profile_id', data.user.id)
+        if (savedP) setSavedProfileIds(savedP.map(r => r.saved_profile_id))
       }
     })
     search()
@@ -114,6 +117,17 @@ export default function SearchPage() {
       setSavedIds(p => [...p, projectId])
     }
   }
+
+  async function toggleSaveProfile(profileId: string) {
+  if (!user) return
+  if (savedProfileIds.includes(profileId)) {
+    await supabase.from('saved_profiles').delete().eq('saved_profile_id', profileId).eq('profile_id', user.id)
+    setSavedProfileIds(p => p.filter(id => id !== profileId))
+  } else {
+    await supabase.from('saved_profiles').insert({ profile_id: user.id, saved_profile_id: profileId })
+    setSavedProfileIds(p => [...p, profileId])
+  }
+}
 
   const inp: React.CSSProperties = { padding: '11px 16px', background: '#1E293B', border: '1px solid #2D3F5C', borderRadius: 10, color: '#F1F5F9', fontSize: 14, fontFamily: 'inherit', outline: 'none' }
   const btn: React.CSSProperties = { background: 'linear-gradient(135deg,#7C3AED,#6D28D9)', color: '#fff', border: 'none', padding: '9px 20px', borderRadius: 9, fontSize: 14, fontWeight: 500, cursor: 'pointer' }
@@ -244,6 +258,14 @@ export default function SearchPage() {
                           <div style={{ fontSize: 18, fontWeight: 700, color: '#10B981' }}>{p.completed_projects}</div>
                           <div style={{ fontSize: 10, color: '#64748B' }}>Completate</div>
                         </div>
+                        <div style={{ background: '#0F172A', borderRadius: 8, padding: '6px 12px', textAlign: 'center' }}>
+  <div style={{ fontSize: 18, fontWeight: 700, color: '#8B5CF6' }}>{p.followers ?? 0}</div>
+  <div style={{ fontSize: 10, color: '#64748B' }}>Follower</div>
+</div>
+                        <div style={{ background: '#0F172A', borderRadius: 8, padding: '6px 12px', textAlign: 'center' }}>
+  <div style={{ fontSize: 18, fontWeight: 700, color: '#8B5CF6' }}>{p.followers ?? 0}</div>
+  <div style={{ fontSize: 10, color: '#64748B' }}>Follower</div>
+</div>
                       </div>
                     </div>
                   </a>

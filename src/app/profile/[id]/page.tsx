@@ -11,6 +11,9 @@ export default function PublicProfile() {
   const [openProjects, setOpenProjects] = useState<any[]>([])
   const [closedProjects, setClosedProjects] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [followers, setFollowers] = useState(0)
+  const [isFollowing, setIsFollowing] = useState(false)
+  const [currentUser, setCurrentUser] = useState<any>(null)
 
   useEffect(() => {
     if (!id) return
@@ -22,6 +25,14 @@ export default function PublicProfile() {
       const { data: closed } = await supabase.from('projects').select('*').eq('founder_id', id).eq('status', 'closed')
       setClosedProjects(closed ?? [])
       setLoading(false)
+      const { data: u } = await supabase.auth.getUser()
+      setCurrentUser(u.user)
+      const { count: f } = await supabase.from('saved_profiles').select('*', { count: 'exact', head: true }).eq('saved_profile_id', id)
+      setFollowers(f ?? 0)
+      if (u.user) {
+      const { data: fol } = await supabase.from('saved_profiles').select('id').eq('profile_id', u.user.id).eq('saved_profile_id', id).single()
+      if (fol) setIsFollowing(true)
+}
     }
     load()
   }, [id])
@@ -59,7 +70,32 @@ export default function PublicProfile() {
               <div style={{ fontSize: 22, fontWeight: 700, color: '#10B981' }}>{closedProjects.length}</div>
               <div style={{ fontSize: 11, color: '#64748B' }}>Team completati</div>
             </div>
+            <div style={{ flex: 1, background: '#0F172A', borderRadius: 10, padding: '10px', textAlign: 'center' }}>
+  <div style={{ fontSize: 22, fontWeight: 700, color: '#8B5CF6' }}>{followers}</div>
+  <div style={{ fontSize: 11, color: '#64748B' }}>Follower</div>
+</div>
           </div>
+
+          {currentUser && currentUser.id !== id && (
+  <button onClick={async () => {
+    if (isFollowing) {
+      await supabase.from('saved_profiles').delete().eq('profile_id', currentUser.id).eq('saved_profile_id', id)
+      setIsFollowing(false)
+      setFollowers(f => f - 1)
+    } else {
+      await supabase.from('saved_profiles').insert({ profile_id: currentUser.id, saved_profile_id: id })
+      setIsFollowing(true)
+      setFollowers(f => f + 1)
+    }
+  }} style={{
+    padding: '8px 20px', borderRadius: 9, fontSize: 13, cursor: 'pointer', marginBottom: 16,
+    background: isFollowing ? 'rgba(239,68,68,0.1)' : 'rgba(124,58,237,0.1)',
+    border: isFollowing ? '1px solid rgba(239,68,68,0.3)' : '1px solid rgba(124,58,237,0.3)',
+    color: isFollowing ? '#EF4444' : '#8B5CF6',
+  }}>
+    {isFollowing ? '★ Smetti di seguire' : '☆ Segui'}
+  </button>
+)}
 
           {profile.bio && <p style={{ fontSize: 14, color: '#94A3B8', lineHeight: 1.7, marginBottom: 16 }}>{profile.bio}</p>}
 

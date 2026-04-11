@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 
-type Tab = 'ricevute' | 'inviate' | 'mie-idee' | 'preferiti'
+type Tab = 'ricevute' | 'inviate' | 'mie-idee' | 'preferiti' | 'following'
 
 function Avatar({ url, name, size = 40 }: { url?: string | null, name?: string, size?: number }) {
   return (
@@ -24,6 +24,7 @@ export default function DashboardPage() {
   const [sent, setSent] = useState<any[]>([])
   const [myProjects, setMyProjects] = useState<any[]>([])
   const [savedProjects, setSavedProjects] = useState<any[]>([])
+  const [followingProfiles, setFollowingProfiles] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [toast, setToast] = useState('')
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
@@ -74,6 +75,12 @@ export default function DashboardPage() {
       .eq('profile_id', uid)
       .order('created_at', { ascending: false })
     setSavedProjects(savedRes.data ?? [])
+    const followingRes = await supabase
+  .from('saved_profiles')
+  .select('*, profiles:saved_profile_id(*)')
+  .eq('profile_id', uid)
+  .order('created_at', { ascending: false })
+setFollowingProfiles(followingRes.data ?? [])
 
     setLoading(false)
   }
@@ -162,7 +169,7 @@ export default function DashboardPage() {
         <p style={{ fontSize: 15, color: '#94A3B8', marginBottom: 28 }}>Gestisci le tue idee e le richieste di collaborazione.</p>
 
         <div style={{ display: 'flex', gap: 4, borderBottom: '1px solid #2D3F5C', marginBottom: 28, overflowX: 'auto' as const }}>
-          {([['ricevute', 'Ricevute'], ['inviate', 'Inviate'], ['mie-idee', 'Le mie idee'], ['preferiti', '⭐ Preferiti']] as [Tab, string][]).map(([t, label]) => (
+          {([['ricevute', 'Ricevute'], ['inviate', 'Inviate'], ['mie-idee', 'Le mie idee'], ['preferiti', '⭐ Preferiti'], ['following', '👥 Seguiti']] as [Tab, string][]).map(([t, label]) => (
             <button key={t} onClick={() => setTab(t)} style={{
               padding: '10px 18px', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14,
               color: tab === t ? '#F59E0B' : '#94A3B8',
@@ -386,6 +393,42 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+
+      {!loading && tab === 'following' && (
+  <div>
+    {followingProfiles.length === 0
+      ? <Empty text="Non stai seguendo nessuno ancora" />
+      : followingProfiles.map(f => {
+        const p = f.profiles
+        if (!p) return null
+        return (
+          <div key={f.id} style={{ background: '#1E293B', border: '1px solid #2D3F5C', borderRadius: 14, padding: '1.25rem', marginBottom: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <a href={`/profile/${p.id}`} style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
+              <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'linear-gradient(135deg,#7C3AED,#F59E0B)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 700, color: '#fff', overflow: 'hidden', flexShrink: 0 }}>
+                {p.avatar_url
+                  ? <img src={p.avatar_url} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  : p.display_name?.[0]?.toUpperCase() ?? '?'
+                }
+              </div>
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 600, color: '#F1F5F9' }}>{p.display_name}</div>
+                {p.university && <div style={{ fontSize: 12, color: '#64748B' }}>{p.university}</div>}
+                {p.city && <div style={{ fontSize: 12, color: '#64748B' }}>📍 {p.city}</div>}
+              </div>
+            </a>
+            <button onClick={async () => {
+              await supabase.from('saved_profiles').delete().eq('id', f.id)
+              setFollowingProfiles(prev => prev.filter(x => x.id !== f.id))
+              showToast('Smesso di seguire')
+            }} style={{ background: 'rgba(239,68,68,0.1)', color: '#EF4444', border: '1px solid rgba(239,68,68,0.3)', padding: '7px 14px', borderRadius: 8, fontSize: 13, cursor: 'pointer' }}>
+              Smetti
+            </button>
+          </div>
+        )
+      })
+    }
+  </div>
+)}
 
       {editProject && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: '1rem' }}>
