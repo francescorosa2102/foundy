@@ -188,7 +188,10 @@ if (!np.city) { showToast('Inserisci la città! ☝️'); return }
             </div>
 
             {/* Banner Beta */}
-<div style={{ width: '100%', maxWidth: 700, background: 'linear-gradient(135deg, rgba(124,58,237,0.1), rgba(245,158,11,0.1))', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 16, padding: '1.5rem', textAlign: 'center', margin: '0 auto' }}>
+<div 
+  onMouseEnter={e => (e.currentTarget.style.border = '1px solid #F59E0B')}
+  onMouseLeave={e => (e.currentTarget.style.border = '1px solid rgba(245,158,11,0.3)')}
+  style={{ width: '100%', maxWidth: 700, background: 'linear-gradient(135deg, rgba(124,58,237,0.1), rgba(245,158,11,0.1))', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 16, padding: '1.5rem', textAlign: 'center', margin: '0 auto', transition: 'border 0.2s' }}>
   <div style={{ fontSize: 13, color: '#F59E0B', fontWeight: 600, marginBottom: 8, letterSpacing: 1 }}>🚀 VERSIONE BETA</div>
   <h3 style={{ fontSize: 18, fontWeight: 700, color: '#F1F5F9', marginBottom: 10 }}>
     Stiamo costruendo qualcosa di grande
