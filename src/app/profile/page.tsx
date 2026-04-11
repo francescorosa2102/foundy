@@ -180,6 +180,20 @@ export default function ProfilePage() {
         }}>
           {saving ? 'Salvataggio...' : 'Salva profilo'}
         </button>
+        <div style={{ background: '#1E293B', border: '1px solid #2D3F5C', borderRadius: 16, padding: '1.75rem', marginBottom: 16, marginTop: 16 }}>
+  <h2 style={{ fontSize: 16, fontWeight: 600, color: '#F1F5F9', marginBottom: 8 }}>Sicurezza</h2>
+  <p style={{ fontSize: 13, color: '#94A3B8', marginBottom: 16 }}>Vuoi cambiare la tua password? Ti mandiamo un link via email.</p>
+  <button onClick={async () => {
+    if (!user?.email) return
+    const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+      redirectTo: 'https://foundy.it/reset-password'
+    })
+    if (error) { showToast('Errore nell\'invio'); return }
+    showToast('Email inviata! Controlla la tua casella. ✅')
+  }} style={{ padding: '10px 20px', borderRadius: 9, background: 'rgba(124,58,237,0.1)', border: '1px solid rgba(124,58,237,0.3)', color: '#8B5CF6', fontSize: 13, cursor: 'pointer' }}>
+    🔒 Cambia password
+  </button>
+</div>
         <div style={{ marginTop: 40, borderTop: '1px solid #2D3F5C', paddingTop: 24 }}>
   <h3 style={{ fontSize: 15, fontWeight: 600, color: '#EF4444', marginBottom: 8 }}>Zona pericolosa</h3>
   <p style={{ fontSize: 13, color: '#64748B', marginBottom: 16, lineHeight: 1.6 }}>
