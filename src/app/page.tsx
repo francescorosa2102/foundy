@@ -172,11 +172,12 @@ if (!np.city) { showToast('Inserisci la città! ☝️'); return }
             </div>
 
             {/* Come funziona */}
-            <div style={{ width: '100%', maxWidth: 700, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 16 }}>
+            <div style={{ width: '100%', maxWidth: 700, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 16 }}>
               {[
                 { emoji: '💡', title: 'Pubblica la tua idea', desc: 'Carica il tuo progetto in pochi minuti e inizia a costruire il team.' },
                 { emoji: '🤝', title: 'Trova il co-founder', desc: 'Cerca persone con le competenze che ti mancano: dev, designer, marketer.' },
                 { emoji: '🚀', title: 'Costruisci insieme', desc: 'Workspace privato con chat, task e materiali solo per il tuo team.' },
+                { emoji: '⭐', title: 'Cresci e fatti notare', desc: 'Accumula follower, costruisci la tua reputazione e diventa un punto di riferimento.' },
                 { emoji: '🏆', title: 'Vai in vetrina', desc: 'Team completo? La tua startup appare agli investitori.' },
               ].map((item, i) => (
                 <div key={i} onMouseEnter={e => (e.currentTarget.style.border = '1px solid #F59E0B')} onMouseLeave={e => (e.currentTarget.style.border = '1px solid #2D3F5C')} style={{ background: '#1E293B', border: '1px solid #2D3F5C', borderRadius: 14, padding: '1.25rem', textAlign: 'center', transition: 'border 0.2s' }}>
