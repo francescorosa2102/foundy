@@ -74,10 +74,7 @@ export default function SearchPage() {
 
   async function search() {
     setLoading(true)
-    let q = supabase
-      .from('projects')
-      .select('*, profiles:founder_id(display_name, avatar_url)')
-      .eq('status', 'active')
+    let q = supabase.from('projects').select('*, profiles:founder_id(display_name, avatar_url)').eq('status', 'active')
     if (query) q = q.or(`title.ilike.%${query}%,description.ilike.%${query}%`)
     if (sector) q = q.eq('category', sector)
     if (city) q = q.ilike('city', `%${city}%`)
@@ -93,13 +90,13 @@ export default function SearchPage() {
     if (peopleCity) q = q.ilike('city', `%${peopleCity}%`)
     if (peopleUniversity) q = q.ilike('university', `%${peopleUniversity}%`)
     const { data: profiles } = await q
-
     if (!profiles) { setLoadingPeople(false); return }
 
     const enriched = await Promise.all(profiles.map(async (p) => {
       const { count: total } = await supabase.from('projects').select('*', { count: 'exact', head: true }).eq('founder_id', p.id)
       const { count: completed } = await supabase.from('projects').select('*', { count: 'exact', head: true }).eq('founder_id', p.id).eq('status', 'closed')
-      return { ...p, total_projects: total ?? 0, completed_projects: completed ?? 0 }
+      const { count: followers } = await supabase.from('saved_profiles').select('*', { count: 'exact', head: true }).eq('saved_profile_id', p.id)
+      return { ...p, total_projects: total ?? 0, completed_projects: completed ?? 0, followers: followers ?? 0 }
     }))
 
     enriched.sort((a, b) => (b.completed_projects + b.total_projects) - (a.completed_projects + a.total_projects))
@@ -119,15 +116,15 @@ export default function SearchPage() {
   }
 
   async function toggleSaveProfile(profileId: string) {
-  if (!user) return
-  if (savedProfileIds.includes(profileId)) {
-    await supabase.from('saved_profiles').delete().eq('saved_profile_id', profileId).eq('profile_id', user.id)
-    setSavedProfileIds(p => p.filter(id => id !== profileId))
-  } else {
-    await supabase.from('saved_profiles').insert({ profile_id: user.id, saved_profile_id: profileId })
-    setSavedProfileIds(p => [...p, profileId])
+    if (!user) return
+    if (savedProfileIds.includes(profileId)) {
+      await supabase.from('saved_profiles').delete().eq('saved_profile_id', profileId).eq('profile_id', user.id)
+      setSavedProfileIds(p => p.filter(id => id !== profileId))
+    } else {
+      await supabase.from('saved_profiles').insert({ profile_id: user.id, saved_profile_id: profileId })
+      setSavedProfileIds(p => [...p, profileId])
+    }
   }
-}
 
   const inp: React.CSSProperties = { padding: '11px 16px', background: '#1E293B', border: '1px solid #2D3F5C', borderRadius: 10, color: '#F1F5F9', fontSize: 14, fontFamily: 'inherit', outline: 'none' }
   const btn: React.CSSProperties = { background: 'linear-gradient(135deg,#7C3AED,#6D28D9)', color: '#fff', border: 'none', padding: '9px 20px', borderRadius: 9, fontSize: 14, fontWeight: 500, cursor: 'pointer' }
@@ -152,7 +149,6 @@ export default function SearchPage() {
         <h1 style={{ fontSize: 28, fontWeight: 700, color: '#F1F5F9', marginBottom: 8 }}>Cerca</h1>
         <p style={{ fontSize: 15, color: '#94A3B8', marginBottom: 24 }}>Trova idee o persone con cui costruire qualcosa di grande.</p>
 
-        {/* Tab */}
         <div style={{ display: 'flex', gap: 4, borderBottom: '1px solid #2D3F5C', marginBottom: 24 }}>
           {(['idee', 'persone'] as const).map(t => (
             <button key={t} onClick={() => setTab(t)} style={{
@@ -164,7 +160,6 @@ export default function SearchPage() {
           ))}
         </div>
 
-        {/* IDEE */}
         {tab === 'idee' && (
           <>
             <div style={{ display: 'flex', gap: 10, marginBottom: 12, flexWrap: 'wrap' as const }}>
@@ -219,7 +214,6 @@ export default function SearchPage() {
           </>
         )}
 
-        {/* PERSONE */}
         {tab === 'persone' && (
           <>
             <div style={{ display: 'flex', gap: 10, marginBottom: 12, flexWrap: 'wrap' as const }}>
@@ -249,7 +243,7 @@ export default function SearchPage() {
                       <div style={{ fontSize: 15, fontWeight: 600, color: '#F1F5F9', marginBottom: 4 }}>{p.display_name}</div>
                       {p.university && <div style={{ fontSize: 12, color: '#64748B', marginBottom: 4 }}>{p.university}</div>}
                       {p.city && <div style={{ fontSize: 12, color: '#64748B', marginBottom: 12 }}>📍 {p.city}</div>}
-                      <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+                      <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 10 }}>
                         <div style={{ background: '#0F172A', borderRadius: 8, padding: '6px 12px', textAlign: 'center' }}>
                           <div style={{ fontSize: 18, fontWeight: 700, color: '#F59E0B' }}>{p.total_projects}</div>
                           <div style={{ fontSize: 10, color: '#64748B' }}>Idee</div>
@@ -259,14 +253,16 @@ export default function SearchPage() {
                           <div style={{ fontSize: 10, color: '#64748B' }}>Completate</div>
                         </div>
                         <div style={{ background: '#0F172A', borderRadius: 8, padding: '6px 12px', textAlign: 'center' }}>
-  <div style={{ fontSize: 18, fontWeight: 700, color: '#8B5CF6' }}>{p.followers ?? 0}</div>
-  <div style={{ fontSize: 10, color: '#64748B' }}>Follower</div>
-</div>
-                        <div style={{ background: '#0F172A', borderRadius: 8, padding: '6px 12px', textAlign: 'center' }}>
-  <div style={{ fontSize: 18, fontWeight: 700, color: '#8B5CF6' }}>{p.followers ?? 0}</div>
-  <div style={{ fontSize: 10, color: '#64748B' }}>Follower</div>
-</div>
+                          <div style={{ fontSize: 18, fontWeight: 700, color: '#8B5CF6' }}>{p.followers}</div>
+                          <div style={{ fontSize: 10, color: '#64748B' }}>Follower</div>
+                        </div>
                       </div>
+                      <button onClick={e => { e.preventDefault(); toggleSaveProfile(p.id) }} style={{
+                        background: 'none', border: 'none', cursor: 'pointer', fontSize: 22,
+                        color: savedProfileIds.includes(p.id) ? '#F59E0B' : '#2D3F5C',
+                      }}>
+                        {savedProfileIds.includes(p.id) ? '★' : '☆'}
+                      </button>
                     </div>
                   </a>
                 ))}
