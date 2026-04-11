@@ -172,7 +172,7 @@ if (!np.city) { showToast('Inserisci la città! ☝️'); return }
             </div>
 
             {/* Come funziona */}
-            <div style={{ width: '100%', maxWidth: 700, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 16 }}>
+            <div style={{ width: '100%', maxWidth: 700, display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 16 }}>
               {[
                 { emoji: '💡', title: 'Pubblica la tua idea', desc: 'Carica il tuo progetto in pochi minuti e inizia a costruire il team.' },
                 { emoji: '🤝', title: 'Trova il co-founder', desc: 'Cerca persone con le competenze che ti mancano: dev, designer, marketer.' },
