@@ -99,7 +99,7 @@ export default function SearchPage() {
       return { ...p, total_projects: total ?? 0, completed_projects: completed ?? 0, followers: followers ?? 0 }
     }))
 
-    enriched.sort((a, b) => (b.completed_projects + b.total_projects) - (a.completed_projects + a.total_projects))
+    enriched.sort((a, b) => (b.completed_projects * 3 + b.total_projects + b.followers * 2) - (a.completed_projects * 3 + a.total_projects + a.followers * 2))
     setPeople(enriched)
     setLoadingPeople(false)
   }
