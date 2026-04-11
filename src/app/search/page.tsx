@@ -119,7 +119,6 @@ async function toggleSave(projectId: string) {
   onKeyDown={e => e.key === 'Enter' && search()}
   style={{ ...inp, minWidth: 140 }} placeholder="Città..." />
 <button onClick={search} style={btn}>Cerca</button>
-          <button onClick={search} style={btn}>Cerca</button>
         </div>
 
         <div style={{ fontSize: 13, color: '#94A3B8', marginBottom: 24 }}>{projects.length} risultati</div>
