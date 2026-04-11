@@ -11,6 +11,7 @@ export default function ProfilePage() {
   const [toast, setToast] = useState('')
   const [avatarUrl, setAvatarUrl] = useState('')
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
+  const [followers, setFollowers] = useState(0)
   const [profile, setProfile] = useState({
     display_name: '',
     first_name: '',
@@ -41,6 +42,8 @@ export default function ProfilePage() {
           skills: p.skills ?? [],
         })
         setAvatarUrl(p.avatar_url ?? '')
+        const { count: f } = await supabase.from('saved_profiles').select('*', { count: 'exact', head: true }).eq('saved_profile_id', data.user.id)
+setFollowers(f ?? 0)
       }
       setLoading(false)
     })
@@ -111,6 +114,18 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
+
+        <div style={{ background: '#1E293B', border: '1px solid #2D3F5C', borderRadius: 16, padding: '1.25rem', marginBottom: 16, display: 'flex', gap: 12 }}>
+  <div style={{ flex: 1, background: '#0F172A', borderRadius: 10, padding: '10px', textAlign: 'center' }}>
+    <div style={{ fontSize: 22, fontWeight: 700, color: '#8B5CF6' }}>{followers}</div>
+    <div style={{ fontSize: 11, color: '#64748B' }}>Follower</div>
+  </div>
+  <div style={{ flex: 1, background: '#0F172A', borderRadius: 10, padding: '10px', textAlign: 'center' }}>
+    <a href={`/profile/${user?.id}`} style={{ textDecoration: 'none' }}>
+      <div style={{ fontSize: 13, color: '#F59E0B', fontWeight: 500 }}>Vedi profilo pubblico →</div>
+    </a>
+  </div>
+</div>
 
         {/* Informazioni base */}
         <div style={{ background: '#1E293B', border: '1px solid #2D3F5C', borderRadius: 16, padding: '1.75rem', marginBottom: 16 }}>
