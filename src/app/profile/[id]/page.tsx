@@ -8,7 +8,8 @@ export default function PublicProfile() {
   const params = useParams()
   const id = params.id as string
   const [profile, setProfile] = useState<any>(null)
-  const [projects, setProjects] = useState<any[]>([])
+  const [openProjects, setOpenProjects] = useState<any[]>([])
+  const [closedProjects, setClosedProjects] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -16,8 +17,10 @@ export default function PublicProfile() {
     async function load() {
       const { data: p } = await supabase.from('profiles').select('*').eq('id', id).single()
       setProfile(p)
-      const { data: pr } = await supabase.from('projects').select('*').eq('founder_id', id).eq('status', 'active')
-      setProjects(pr ?? [])
+      const { data: open } = await supabase.from('projects').select('*').eq('founder_id', id).eq('status', 'active')
+      setOpenProjects(open ?? [])
+      const { data: closed } = await supabase.from('projects').select('*').eq('founder_id', id).eq('status', 'closed')
+      setClosedProjects(closed ?? [])
       setLoading(false)
     }
     load()
@@ -29,6 +32,8 @@ export default function PublicProfile() {
   return (
     <div style={{ minHeight: '100vh', background: '#0F172A', padding: '2rem 1rem' }}>
       <div style={{ maxWidth: 640, margin: '0 auto' }}>
+
+        {/* Card profilo */}
         <div style={{ background: '#1E293B', border: '1px solid #2D3F5C', borderRadius: 16, padding: '2rem', marginBottom: 24 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
             <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'linear-gradient(135deg,#7C3AED,#F59E0B)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, fontWeight: 700, color: '#fff', flexShrink: 0, overflow: 'hidden' }}>
@@ -41,6 +46,18 @@ export default function PublicProfile() {
               <div style={{ fontSize: 22, fontWeight: 700, color: '#F1F5F9' }}>{profile.display_name}</div>
               {profile.university && <div style={{ fontSize: 14, color: '#94A3B8' }}>{profile.university}{profile.degree_course ? ` · ${profile.degree_course}` : ''}</div>}
               {profile.city && <div style={{ fontSize: 13, color: '#64748B' }}>📍 {profile.city}</div>}
+            </div>
+          </div>
+
+          {/* Statistiche */}
+          <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
+            <div style={{ flex: 1, background: '#0F172A', borderRadius: 10, padding: '10px', textAlign: 'center' }}>
+              <div style={{ fontSize: 22, fontWeight: 700, color: '#F59E0B' }}>{openProjects.length + closedProjects.length}</div>
+              <div style={{ fontSize: 11, color: '#64748B' }}>Idee pubblicate</div>
+            </div>
+            <div style={{ flex: 1, background: '#0F172A', borderRadius: 10, padding: '10px', textAlign: 'center' }}>
+              <div style={{ fontSize: 22, fontWeight: 700, color: '#10B981' }}>{closedProjects.length}</div>
+              <div style={{ fontSize: 11, color: '#64748B' }}>Team completati</div>
             </div>
           </div>
 
@@ -59,16 +76,42 @@ export default function PublicProfile() {
           )}
         </div>
 
-        {projects.length > 0 && (
+        {/* Idee aperte */}
+        {openProjects.length > 0 && (
+          <div style={{ marginBottom: 24 }}>
+            <h2 style={{ fontSize: 16, fontWeight: 600, color: '#F1F5F9', marginBottom: 14 }}>💡 Idee aperte</h2>
+            {openProjects.map(pr => (
+              <a key={pr.id} href={`/projects/${pr.id}`} style={{ textDecoration: 'none' }}>
+                <div onMouseEnter={e => (e.currentTarget.style.border = '1px solid #F59E0B')}
+                  onMouseLeave={e => (e.currentTarget.style.border = '1px solid #2D3F5C')}
+                  style={{ background: '#1E293B', border: '1px solid #2D3F5C', borderRadius: 14, padding: '1.25rem', marginBottom: 12, transition: 'border 0.2s' }}>
+                  <div style={{ fontSize: 16, fontWeight: 600, color: '#F1F5F9', marginBottom: 4 }}>{pr.title}</div>
+                  <div style={{ fontSize: 13, color: '#94A3B8', marginBottom: 8 }}>{pr.description}</div>
+                  {pr.category && <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 999, background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.3)', color: '#F59E0B' }}>{pr.category}</span>}
+                </div>
+              </a>
+            ))}
+          </div>
+        )}
+
+        {/* Idee completate */}
+        {closedProjects.length > 0 && (
           <div>
-            <h2 style={{ fontSize: 16, fontWeight: 600, color: '#F1F5F9', marginBottom: 14 }}>Idee pubblicate</h2>
-            {projects.map(pr => (
-              <div key={pr.id} style={{ background: '#1E293B', border: '1px solid #2D3F5C', borderRadius: 14, padding: '1.25rem', marginBottom: 12 }}>
+            <h2 style={{ fontSize: 16, fontWeight: 600, color: '#F1F5F9', marginBottom: 14 }}>🏆 Team completati</h2>
+            {closedProjects.map(pr => (
+              <div key={pr.id} style={{ background: '#1E293B', border: '1px solid rgba(16,185,129,0.4)', borderRadius: 14, padding: '1.25rem', marginBottom: 12 }}>
                 <div style={{ fontSize: 16, fontWeight: 600, color: '#F1F5F9', marginBottom: 4 }}>{pr.title}</div>
                 <div style={{ fontSize: 13, color: '#94A3B8', marginBottom: 8 }}>{pr.description}</div>
-                {pr.category && <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 999, background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.3)', color: '#F59E0B' }}>{pr.category}</span>}
+                {pr.category && <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 999, background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', color: '#10B981' }}>{pr.category}</span>}
               </div>
             ))}
+          </div>
+        )}
+
+        {openProjects.length === 0 && closedProjects.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '3rem', color: '#94A3B8', border: '1px dashed #2D3F5C', borderRadius: 14 }}>
+            <div style={{ fontSize: 36, marginBottom: 12 }}>💡</div>
+            <p>Nessuna idea pubblicata ancora.</p>
           </div>
         )}
       </div>

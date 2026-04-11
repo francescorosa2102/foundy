@@ -37,40 +37,38 @@ function getCategoryGradient(category: string | null) {
 }
 
 export default function SearchPage() {
+  const [tab, setTab] = useState<'idee' | 'persone'>('idee')
   const [projects, setProjects] = useState<any[]>([])
+  const [people, setPeople] = useState<any[]>([])
   const [query, setQuery] = useState('')
   const [sector, setSector] = useState('')
   const [city, setCity] = useState('')
+  const [peopleQuery, setPeopleQuery] = useState('')
+  const [peopleCity, setPeopleCity] = useState('')
+  const [peopleUniversity, setPeopleUniversity] = useState('')
   const [loading, setLoading] = useState(false)
+  const [loadingPeople, setLoadingPeople] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [sentIds, setSentIds] = useState<string[]>([])
-  const [toast, setToast] = useState('')
   const [savedIds, setSavedIds] = useState<string[]>([])
+  const [toast, setToast] = useState('')
 
   useEffect(() => {
-  supabase.auth.getUser().then(async ({ data }) => {
-    setUser(data.user)
-    if (data.user) {
-      const { data: sent } = await supabase.from('join_requests').select('project_id').eq('applicant_id', data.user.id)
-      if (sent) setSentIds(sent.map(r => r.project_id))
-      const { data: saved } = await supabase.from('saved_projects').select('project_id').eq('profile_id', data.user.id)
-      if (saved) setSavedIds(saved.map(r => r.project_id))
-    }
-  })
-  search()
-}, [])
+    supabase.auth.getUser().then(async ({ data }) => {
+      setUser(data.user)
+      if (data.user) {
+        const { data: sent } = await supabase.from('join_requests').select('project_id').eq('applicant_id', data.user.id)
+        if (sent) setSentIds(sent.map(r => r.project_id))
+        const { data: saved } = await supabase.from('saved_projects').select('project_id').eq('profile_id', data.user.id)
+        if (saved) setSavedIds(saved.map(r => r.project_id))
+      }
+    })
+    search()
+    searchPeople()
+  }, [])
 
   function showToast(msg: string) { setToast(msg); setTimeout(() => setToast(''), 3000) }
-async function toggleSave(projectId: string) {
-  if (!user) return
-  if (savedIds.includes(projectId)) {
-    await supabase.from('saved_projects').delete().eq('project_id', projectId).eq('profile_id', user.id)
-    setSavedIds(p => p.filter(id => id !== projectId))
-  } else {
-    await supabase.from('saved_projects').insert({ project_id: projectId, profile_id: user.id })
-    setSavedIds(p => [...p, projectId])
-  }
-}
+
   async function search() {
     setLoading(true)
     let q = supabase
@@ -83,6 +81,38 @@ async function toggleSave(projectId: string) {
     const { data } = await q.order('created_at', { ascending: false })
     setProjects(data ?? [])
     setLoading(false)
+  }
+
+  async function searchPeople() {
+    setLoadingPeople(true)
+    let q = supabase.from('profiles').select('*')
+    if (peopleQuery) q = q.ilike('display_name', `%${peopleQuery}%`)
+    if (peopleCity) q = q.ilike('city', `%${peopleCity}%`)
+    if (peopleUniversity) q = q.ilike('university', `%${peopleUniversity}%`)
+    const { data: profiles } = await q
+
+    if (!profiles) { setLoadingPeople(false); return }
+
+    const enriched = await Promise.all(profiles.map(async (p) => {
+      const { count: total } = await supabase.from('projects').select('*', { count: 'exact', head: true }).eq('founder_id', p.id)
+      const { count: completed } = await supabase.from('projects').select('*', { count: 'exact', head: true }).eq('founder_id', p.id).eq('status', 'closed')
+      return { ...p, total_projects: total ?? 0, completed_projects: completed ?? 0 }
+    }))
+
+    enriched.sort((a, b) => (b.completed_projects + b.total_projects) - (a.completed_projects + a.total_projects))
+    setPeople(enriched)
+    setLoadingPeople(false)
+  }
+
+  async function toggleSave(projectId: string) {
+    if (!user) return
+    if (savedIds.includes(projectId)) {
+      await supabase.from('saved_projects').delete().eq('project_id', projectId).eq('profile_id', user.id)
+      setSavedIds(p => p.filter(id => id !== projectId))
+    } else {
+      await supabase.from('saved_projects').insert({ project_id: projectId, profile_id: user.id })
+      setSavedIds(p => [...p, projectId])
+    }
   }
 
   const inp: React.CSSProperties = { padding: '11px 16px', background: '#1E293B', border: '1px solid #2D3F5C', borderRadius: 10, color: '#F1F5F9', fontSize: 14, fontFamily: 'inherit', outline: 'none' }
@@ -105,66 +135,128 @@ async function toggleSave(projectId: string) {
   return (
     <div style={{ minHeight: '100vh', background: '#0F172A', padding: '2rem 1rem' }}>
       <div style={{ maxWidth: 780, margin: '0 auto' }}>
-        <h1 style={{ fontSize: 28, fontWeight: 700, color: '#F1F5F9', marginBottom: 8 }}>Cerca idee</h1>
-        <p style={{ fontSize: 15, color: '#94A3B8', marginBottom: 28 }}>Trova la startup su cui vuoi lavorare.</p>
+        <h1 style={{ fontSize: 28, fontWeight: 700, color: '#F1F5F9', marginBottom: 8 }}>Cerca</h1>
+        <p style={{ fontSize: 15, color: '#94A3B8', marginBottom: 24 }}>Trova idee o persone con cui costruire qualcosa di grande.</p>
 
-        <div style={{ display: 'flex', gap: 10, marginBottom: 12, flexWrap: 'wrap' as const }}>
-          <input value={query} onChange={e => setQuery(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && search()}
-            style={{ ...inp, flex: 1, minWidth: 200 }} placeholder="Cerca per titolo o descrizione..." />
-          <select value={sector} onChange={e => setSector(e.target.value)} style={{ ...inp, minWidth: 140 }}>
-            {SECTORS.map(s => <option key={s} value={s}>{s || 'Tutti i settori'}</option>)}
-          </select>
-          <input value={city} onChange={e => setCity(e.target.value)}
-  onKeyDown={e => e.key === 'Enter' && search()}
-  style={{ ...inp, minWidth: 140 }} placeholder="Città..." />
-<button onClick={search} style={btn}>Cerca</button>
+        {/* Tab */}
+        <div style={{ display: 'flex', gap: 4, borderBottom: '1px solid #2D3F5C', marginBottom: 24 }}>
+          {(['idee', 'persone'] as const).map(t => (
+            <button key={t} onClick={() => setTab(t)} style={{
+              padding: '10px 24px', background: 'none', border: 'none', cursor: 'pointer', fontSize: 15,
+              color: tab === t ? '#F59E0B' : '#94A3B8',
+              borderBottom: tab === t ? '2px solid #F59E0B' : '2px solid transparent',
+              fontWeight: tab === t ? 600 : 400, marginBottom: -1,
+            }}>{t === 'idee' ? '💡 Idee' : '👥 Persone'}</button>
+          ))}
         </div>
 
-        <div style={{ fontSize: 13, color: '#94A3B8', marginBottom: 24 }}>{projects.length} risultati</div>
-
-        {loading && <div style={{ textAlign: 'center', padding: '3rem', color: '#94A3B8' }}>Caricamento...</div>}
-
-        {!loading && projects.map(pr => (
-          <div key={pr.id} onClick={() => window.location.href = `/projects/${pr.id}`} style={{ background: '#1E293B', border: '1px solid #2D3F5C', borderRadius: 16, overflow: 'hidden', marginBottom: 20, cursor: 'pointer' }}>
-            {pr.image_url
-              ? <img src={pr.image_url} alt={pr.title} style={{ width: '100%', height: 160, objectFit: 'cover' }} />
-              : <div style={{ height: 160, background: getCategoryGradient(pr.category), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <img src="/foundy.png" alt="Foundy" style={{ height: 80, width: 'auto', opacity: 0.7 }} />
+        {/* IDEE */}
+        {tab === 'idee' && (
+          <>
+            <div style={{ display: 'flex', gap: 10, marginBottom: 12, flexWrap: 'wrap' as const }}>
+              <input value={query} onChange={e => setQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && search()}
+                style={{ ...inp, flex: 1, minWidth: 200 }} placeholder="Cerca per titolo..." />
+              <select value={sector} onChange={e => setSector(e.target.value)} style={{ ...inp, minWidth: 140 }}>
+                {SECTORS.map(s => <option key={s} value={s}>{s || 'Tutti i settori'}</option>)}
+              </select>
+              <input value={city} onChange={e => setCity(e.target.value)} onKeyDown={e => e.key === 'Enter' && search()}
+                style={{ ...inp, minWidth: 120 }} placeholder="Città..." />
+              <button onClick={search} style={btn}>Cerca</button>
+            </div>
+            <div style={{ fontSize: 13, color: '#94A3B8', marginBottom: 24 }}>{projects.length} risultati</div>
+            {loading && <div style={{ textAlign: 'center', padding: '3rem', color: '#94A3B8' }}>Caricamento...</div>}
+            {!loading && projects.map(pr => (
+              <div key={pr.id} onClick={() => window.location.href = `/projects/${pr.id}`} style={{ background: '#1E293B', border: '1px solid #2D3F5C', borderRadius: 16, overflow: 'hidden', marginBottom: 20, cursor: 'pointer' }}>
+                {pr.image_url
+                  ? <img src={pr.image_url} alt={pr.title} style={{ width: '100%', height: 160, objectFit: 'cover' }} />
+                  : <div style={{ height: 160, background: getCategoryGradient(pr.category), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <img src="/foundy.png" alt="Foundy" style={{ height: 80, width: 'auto', opacity: 0.7 }} />
+                    </div>
+                }
+                <div style={{ padding: '1.1rem' }}>
+                  <div style={{ display: 'flex', gap: 6, marginBottom: 8, flexWrap: 'wrap' as const }}>
+                    {pr.category && <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 999, background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.3)', color: '#F59E0B' }}>{pr.category}</span>}
+                    {(pr.required_roles || []).slice(0, 3).map((r: string) => (
+                      <span key={r} style={{ fontSize: 11, padding: '3px 10px', borderRadius: 999, background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.3)', color: '#F59E0B' }}>{r}</span>
+                    ))}
+                  </div>
+                  <h3 style={{ fontSize: 18, fontWeight: 600, color: '#F1F5F9', marginBottom: 14 }}>{pr.title}</h3>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <a href={`/profile/${pr.founder_id}`} onClick={e => e.stopPropagation()} style={{ fontSize: 12, color: '#64748B', textDecoration: 'none' }}>👤 {pr.profiles?.display_name ?? 'Founder'}</a>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <button onClick={e => { e.stopPropagation(); toggleSave(pr.id) }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: savedIds.includes(pr.id) ? '#F59E0B' : '#2D3F5C', padding: '4px' }}>
+                        {savedIds.includes(pr.id) ? '★' : '☆'}
+                      </button>
+                      {sentIds.includes(pr.id)
+                        ? <span style={{ fontSize: 13, color: '#10B981' }}>✓ Richiesta inviata</span>
+                        : user?.id !== pr.founder_id && <span style={{ fontSize: 12, color: '#7C3AED' }}>Clicca per vedere →</span>
+                      }
+                    </div>
+                  </div>
                 </div>
-            }
-            <div style={{ padding: '1.1rem' }}>
-              <div style={{ display: 'flex', gap: 6, marginBottom: 8, flexWrap: 'wrap' as const }}>
-                {pr.category && <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 999, background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.3)', color: '#F59E0B' }}>{pr.category}</span>}
-                {(pr.required_roles || []).slice(0, 3).map((r: string) => (
-                  <span key={r} style={{ fontSize: 11, padding: '3px 10px', borderRadius: 999, background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.3)', color: '#F59E0B' }}>{r}</span>
+              </div>
+            ))}
+            {!loading && projects.length === 0 && (
+              <div style={{ textAlign: 'center', padding: '4rem', color: '#94A3B8', border: '1px dashed #2D3F5C', borderRadius: 14 }}>
+                <div style={{ fontSize: 40, marginBottom: 12 }}>🔍</div>
+                <p>Nessun risultato. Prova con altri termini.</p>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* PERSONE */}
+        {tab === 'persone' && (
+          <>
+            <div style={{ display: 'flex', gap: 10, marginBottom: 12, flexWrap: 'wrap' as const }}>
+              <input value={peopleQuery} onChange={e => setPeopleQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && searchPeople()}
+                style={{ ...inp, flex: 1, minWidth: 200 }} placeholder="Cerca per nome..." />
+              <input value={peopleCity} onChange={e => setPeopleCity(e.target.value)} onKeyDown={e => e.key === 'Enter' && searchPeople()}
+                style={{ ...inp, minWidth: 120 }} placeholder="Città..." />
+              <input value={peopleUniversity} onChange={e => setPeopleUniversity(e.target.value)} onKeyDown={e => e.key === 'Enter' && searchPeople()}
+                style={{ ...inp, minWidth: 160 }} placeholder="Università..." />
+              <button onClick={searchPeople} style={btn}>Cerca</button>
+            </div>
+            <div style={{ fontSize: 13, color: '#94A3B8', marginBottom: 24 }}>{people.length} founder</div>
+            {loadingPeople && <div style={{ textAlign: 'center', padding: '3rem', color: '#94A3B8' }}>Caricamento...</div>}
+            {!loadingPeople && (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 16 }}>
+                {people.map(p => (
+                  <a key={p.id} href={`/profile/${p.id}`} style={{ textDecoration: 'none' }}>
+                    <div onMouseEnter={e => (e.currentTarget.style.border = '1px solid #F59E0B')}
+                      onMouseLeave={e => (e.currentTarget.style.border = '1px solid #2D3F5C')}
+                      style={{ background: '#1E293B', border: '1px solid #2D3F5C', borderRadius: 14, padding: '1.25rem', textAlign: 'center', cursor: 'pointer', transition: 'border 0.2s' }}>
+                      <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'linear-gradient(135deg,#7C3AED,#F59E0B)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, fontWeight: 700, color: '#fff', overflow: 'hidden', margin: '0 auto 12px' }}>
+                        {p.avatar_url
+                          ? <img src={p.avatar_url} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          : p.display_name?.[0]?.toUpperCase() ?? '?'
+                        }
+                      </div>
+                      <div style={{ fontSize: 15, fontWeight: 600, color: '#F1F5F9', marginBottom: 4 }}>{p.display_name}</div>
+                      {p.university && <div style={{ fontSize: 12, color: '#64748B', marginBottom: 4 }}>{p.university}</div>}
+                      {p.city && <div style={{ fontSize: 12, color: '#64748B', marginBottom: 12 }}>📍 {p.city}</div>}
+                      <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+                        <div style={{ background: '#0F172A', borderRadius: 8, padding: '6px 12px', textAlign: 'center' }}>
+                          <div style={{ fontSize: 18, fontWeight: 700, color: '#F59E0B' }}>{p.total_projects}</div>
+                          <div style={{ fontSize: 10, color: '#64748B' }}>Idee</div>
+                        </div>
+                        <div style={{ background: '#0F172A', borderRadius: 8, padding: '6px 12px', textAlign: 'center' }}>
+                          <div style={{ fontSize: 18, fontWeight: 700, color: '#10B981' }}>{p.completed_projects}</div>
+                          <div style={{ fontSize: 10, color: '#64748B' }}>Completate</div>
+                        </div>
+                      </div>
+                    </div>
+                  </a>
                 ))}
               </div>
-              <h3 style={{ fontSize: 18, fontWeight: 600, color: '#F1F5F9', marginBottom: 14 }}>{pr.title}</h3>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <a href={`/profile/${pr.founder_id}`} onClick={e => e.stopPropagation()} style={{ fontSize: 12, color: '#64748B', textDecoration: 'none' }}>👤 {pr.profiles?.display_name ?? 'Founder'}</a>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-  <button onClick={e => { e.stopPropagation(); toggleSave(pr.id) }} style={{
-    background: 'none', border: 'none', cursor: 'pointer', fontSize: 20,
-    color: savedIds.includes(pr.id) ? '#F59E0B' : '#2D3F5C', padding: '4px'
-  }}>
-    {savedIds.includes(pr.id) ? '★' : '☆'}
-  </button>
-  {sentIds.includes(pr.id)
-    ? <span style={{ fontSize: 13, color: '#10B981' }}>✓ Richiesta inviata</span>
-    : user?.id !== pr.founder_id && <span style={{ fontSize: 12, color: '#7C3AED' }}>Clicca per vedere →</span>
-  }
-</div>
+            )}
+            {!loadingPeople && people.length === 0 && (
+              <div style={{ textAlign: 'center', padding: '4rem', color: '#94A3B8', border: '1px dashed #2D3F5C', borderRadius: 14 }}>
+                <div style={{ fontSize: 40, marginBottom: 12 }}>👥</div>
+                <p>Nessun founder trovato.</p>
               </div>
-            </div>
-          </div>
-        ))}
-
-        {!loading && projects.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '4rem', color: '#94A3B8', border: '1px dashed #2D3F5C', borderRadius: 14 }}>
-            <div style={{ fontSize: 40, marginBottom: 12 }}>🔍</div>
-            <p>Nessun risultato. Prova con altri termini.</p>
-          </div>
+            )}
+          </>
         )}
       </div>
 
